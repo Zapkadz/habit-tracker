@@ -1,0 +1,12 @@
+// Phase 0 keeps the database ready but model-free.
+// Phase 1 will add Habit, HabitLog, TimeBlock, DailyCheckin, DailyScore,
+// DailyPriority, and WeeklyGoal.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
