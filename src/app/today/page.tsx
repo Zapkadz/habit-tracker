@@ -1,11 +1,8 @@
-import {
-  AlertTriangle,
-  CalendarDays,
-  CheckCircle2,
-  Clock3,
-  ListChecks,
-  Target,
-} from "lucide-react";
+import { AlertTriangle, CalendarDays, CheckCircle2, Clock3, ListChecks, Target } from "lucide-react";
+import { DailyCheckinForm } from "@/components/today/daily-checkin-form";
+import { PriorityList } from "@/components/today/priority-list";
+import { TimeBlockTimeline } from "@/components/today/time-block-timeline";
+import { TodayAnalysisPanel } from "@/components/today/today-analysis-panel";
 import { TodayHabitChecklist } from "@/components/today/today-habit-checklist";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -17,11 +14,17 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { getHabitChecklist } from "@/server/habit-logs";
+import { DAY_TYPE_LABELS } from "@/lib/constants/day-types";
+import { MAX_DAILY_PRIORITIES } from "@/lib/constants/planner";
 import {
   formatReadableDate,
   parseDateString,
 } from "@/lib/dates/date-utils";
+import { formatDuration, minutesBetween } from "@/lib/dates/time-utils";
+import { getDailyCheckin } from "@/server/daily-checkins";
+import { getDailyPriorities } from "@/server/daily-priorities";
+import { getHabitChecklist } from "@/server/habit-logs";
+import { getTimeBlocks } from "@/server/time-blocks";
 
 type TodayPageProps = {
   searchParams?: Promise<{
@@ -34,7 +37,18 @@ type TodayPageProps = {
 export default async function TodayPage({ searchParams }: TodayPageProps) {
   const params = searchParams ? await searchParams : {};
   const selectedDate = parseDateString(params.date);
-  const habits = await getHabitChecklist(selectedDate);
+  const [habits, checkin, priorities, timeBlocks] = await Promise.all([
+    getHabitChecklist(selectedDate),
+    getDailyCheckin(selectedDate),
+    getDailyPriorities(selectedDate),
+    getTimeBlocks(selectedDate),
+  ]);
+  const plannedMinutes = timeBlocks.reduce(
+    (sum, block) =>
+      sum + minutesBetween(block.plannedStartTime, block.plannedEndTime),
+    0
+  );
+  const dayType = checkin?.dayType ?? "normal";
 
   return (
     <div className="space-y-4">
@@ -48,8 +62,8 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
               Plan and track {formatReadableDate(selectedDate)}
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-600">
-              Phase 2 adds the real habit checklist. Time blocks, priorities,
-              check-in, scoring, and warnings remain staged for later phases.
+              Plan priorities, schedule time blocks, log active habits, and
+              capture the daily check-in from one screen.
             </p>
           </div>
 
@@ -97,11 +111,13 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
               <CalendarDays className="size-3.5" aria-hidden="true" />
               Day type
             </CardDescription>
-            <CardTitle className="text-2xl font-semibold">Normal</CardTitle>
+            <CardTitle className="text-2xl font-semibold">
+              {DAY_TYPE_LABELS[dayType]}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs leading-5 text-current/65">
-              Selector arrives with the full Today page.
+              Saved through the daily check-in.
             </p>
           </CardContent>
         </Card>
@@ -121,7 +137,7 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
           </CardHeader>
           <CardContent>
             <p className="text-xs leading-5 text-current/65">
-              Managed from the Habits page.
+              Status is saved per selected date.
             </p>
           </CardContent>
         </Card>
@@ -135,11 +151,13 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
               <Target className="size-3.5" aria-hidden="true" />
               Priorities
             </CardDescription>
-            <CardTitle className="text-2xl font-semibold">0 / 3</CardTitle>
+            <CardTitle className="text-2xl font-semibold">
+              {priorities.length} / {MAX_DAILY_PRIORITIES}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs leading-5 text-current/65">
-              Priority CRUD arrives in Phase 3.
+              Top outcomes for the day.
             </p>
           </CardContent>
         </Card>
@@ -150,39 +168,36 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
         >
           <CardHeader>
             <CardDescription className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-current/60">
-              <CheckCircle2 className="size-3.5" aria-hidden="true" />
-              Daily score
+              <Clock3 className="size-3.5" aria-hidden="true" />
+              Planned time
             </CardDescription>
-            <CardTitle className="text-2xl font-semibold">--</CardTitle>
+            <CardTitle className="text-2xl font-semibold">
+              {formatDuration(plannedMinutes)}
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs leading-5 text-current/65">
-              Rule-based scoring starts in Phase 4.
+              From planned time blocks.
             </p>
           </CardContent>
         </Card>
       </section>
 
-      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_minmax(340px,0.8fr)]">
-        <TodayHabitChecklist date={selectedDate} habits={habits} />
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.85fr)]">
+        <div className="space-y-4">
+          <PriorityList date={selectedDate} priorities={priorities} />
+          <TimeBlockTimeline date={selectedDate} timeBlocks={timeBlocks} />
+          <TodayHabitChecklist date={selectedDate} habits={habits} />
+        </div>
 
         <div className="space-y-4">
-          <Card className="rounded-lg border border-slate-200 bg-white shadow-sm ring-0">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                <Clock3 className="size-4" aria-hidden="true" />
-                Timeline
-              </CardTitle>
-              <CardDescription>
-                TimeBlock CRUD is planned for Phase 3.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50 p-4 text-sm text-slate-500">
-                Planned and actual blocks will appear here.
-              </div>
-            </CardContent>
-          </Card>
+          <DailyCheckinForm date={selectedDate} checkin={checkin} />
+          <TodayAnalysisPanel
+            checkin={checkin}
+            priorities={priorities}
+            habits={habits}
+            timeBlocks={timeBlocks}
+          />
 
           <Card className="rounded-lg border border-slate-200 bg-white shadow-sm ring-0">
             <CardHeader>
@@ -191,7 +206,7 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
                 Warnings and advice
               </CardTitle>
               <CardDescription>
-                Warnings become active after scoring is implemented.
+                Phase 4 will turn these totals into score and warnings.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -199,8 +214,26 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
                 variant="outline"
                 className="rounded-lg border-slate-300 bg-slate-50 text-slate-600"
               >
-                Waiting for Phase 4
+                Ready for scoring rules
               </Badge>
+            </CardContent>
+          </Card>
+
+          <Card className="rounded-lg border border-slate-200 bg-white shadow-sm ring-0">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-base font-semibold">
+                <CheckCircle2 className="size-4" aria-hidden="true" />
+                Daily score
+              </CardTitle>
+              <CardDescription>
+                Score calculation remains intentionally out of Phase 3.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm leading-6 text-slate-600">
+                The data needed for scoring is now captured. Phase 4 can use
+                sleep, focus, rest, habit, mood, and priority signals.
+              </p>
             </CardContent>
           </Card>
         </div>

@@ -87,7 +87,7 @@ export function TodayHabitChecklist({
             variant="outline"
             className="w-fit rounded-lg border-slate-300 bg-slate-50 text-slate-700"
           >
-            {completedCount}/{habits.length} done · {percent}%
+            {completedCount}/{habits.length} done - {percent}%
           </Badge>
         </div>
       </CardHeader>
@@ -127,7 +127,7 @@ export function TodayHabitChecklist({
                       </span>
                     </div>
                     <p className="mt-1 text-xs text-slate-500">
-                      Target: {habit.targetPerWeek}/week · Icon: {habit.icon}
+                      Target: {habit.targetPerWeek}/week - Icon: {habit.icon}
                     </p>
                   </div>
 
