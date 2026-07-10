@@ -37,3 +37,11 @@ export const DAY_TYPES = [
 ] as const;
 
 export type DayType = (typeof DAY_TYPES)[number]["value"];
+
+export const DAY_TYPE_LABELS: Record<DayType, string> = DAY_TYPES.reduce(
+  (labels, dayType) => ({
+    ...labels,
+    [dayType.value]: dayType.label,
+  }),
+  {} as Record<DayType, string>
+);

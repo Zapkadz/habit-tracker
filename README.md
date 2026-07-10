@@ -4,7 +4,7 @@ Local-first web app for planning daily routines, tracking habits, balancing work
 
 ## Current Phase
 
-Phase 2: Habit tracker core.
+Phase 3: Today command center.
 
 The foundation includes:
 
@@ -19,6 +19,10 @@ The foundation includes:
 - Seed habits for the first local dataset
 - Habit management UI
 - Daily habit checklist with saved habit logs
+- Daily check-in with day type, sleep, mood, motivation, stress, and notes
+- Top 3 daily priorities
+- Time block planning with planned and actual time fields
+- Basic daily totals for sleep, focus, rest, and planned time
 
 No authentication, deployment, AI, or full feature logic is included in the MVP foundation.
 
@@ -114,6 +118,15 @@ The local SQLite database file is ignored by Git.
 - Track daily habit status from the Today page.
 - Supported daily statuses: `done`, `partial`, `skipped`, and `missed`.
 - Clear a habit log when a date should return to an unrecorded state.
+
+## Phase 3 Features
+
+- Select a date on the Today page.
+- Save a daily check-in with day type and personal context.
+- Create, update, and delete up to 3 daily priorities.
+- Create, update, and delete time blocks for the selected date.
+- Track planned and actual time for each block.
+- Review basic daily totals before full scoring arrives.
 
 ## Navigation
 
