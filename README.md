@@ -4,9 +4,9 @@ Local-first web app for planning daily routines, tracking habits, balancing work
 
 ## Current Phase
 
-Phase 0: Project setup.
+Phase 1: Data models and seed data.
 
-This phase includes:
+The foundation includes:
 
 - Next.js App Router
 - TypeScript
@@ -15,6 +15,8 @@ This phase includes:
 - Prisma configured for SQLite
 - App shell with sidebar navigation
 - Placeholder pages for Today, Week, Month, Habits, Analytics, and Settings
+- Prisma models for habits, logs, time blocks, check-ins, scores, priorities, and weekly goals
+- Seed habits for the first local dataset
 
 No authentication, deployment, AI, or full feature logic is included in the MVP foundation.
 
@@ -45,6 +47,18 @@ Generate the Prisma client:
 
 ```bash
 npm run db:generate
+```
+
+Create and apply local database migrations:
+
+```bash
+npm run db:migrate
+```
+
+Seed the local database:
+
+```bash
+npm run db:seed
 ```
 
 Run the local development server:
@@ -79,7 +93,17 @@ The local database URL is:
 DATABASE_URL="file:./dev.db"
 ```
 
-Phase 0 intentionally keeps the Prisma schema model-free. Data models are scheduled for Phase 1.
+The initial schema includes:
+
+- `Habit`
+- `HabitLog`
+- `TimeBlock`
+- `DailyCheckin`
+- `DailyScore`
+- `DailyPriority`
+- `WeeklyGoal`
+
+The local SQLite database file is ignored by Git.
 
 ## Navigation
 

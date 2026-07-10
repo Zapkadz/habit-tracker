@@ -1,6 +1,4 @@
-// Phase 0 keeps the database ready but model-free.
-// Phase 1 will add Habit, HabitLog, TimeBlock, DailyCheckin, DailyScore,
-// DailyPriority, and WeeklyGoal.
+// Local-first routine balance dashboard data model.
 
 generator client {
   provider = "prisma-client"
@@ -9,4 +7,187 @@ generator client {
 
 datasource db {
   provider = "sqlite"
+}
+
+enum HabitStatus {
+  done
+  partial
+  skipped
+  missed
+}
+
+enum TimeBlockStatus {
+  planned
+  done
+  partial
+  skipped
+}
+
+enum DailyPriorityStatus {
+  planned
+  done
+  partial
+  skipped
+}
+
+enum DayType {
+  normal
+  study_sprint
+  work_heavy
+  recovery
+  rest
+  deadline
+  travel
+}
+
+enum TimeBlockCategory {
+  sleep
+  deep_work
+  study
+  work
+  rest
+  exercise
+  entertainment
+  personal
+  meal
+  commute
+  social
+  other
+}
+
+enum HabitCategory {
+  health
+  study
+  work
+  lifestyle
+  rest
+  discipline
+  personal
+}
+
+enum WarningLevel {
+  good
+  notice
+  warning
+  risk
+}
+
+model Habit {
+  id            String        @id @default(cuid())
+  name          String        @unique
+  icon          String
+  category      HabitCategory
+  weight        Int           @default(5)
+  targetPerWeek Int           @default(5)
+  isActive      Boolean       @default(true)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  logs HabitLog[]
+
+  @@index([category])
+  @@index([isActive])
+}
+
+model HabitLog {
+  id        String      @id @default(cuid())
+  habitId   String
+  date      DateTime
+  status    HabitStatus @default(missed)
+  note      String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  habit Habit @relation(fields: [habitId], references: [id], onDelete: Cascade)
+
+  @@unique([habitId, date])
+  @@index([date])
+  @@index([status])
+}
+
+model TimeBlock {
+  id                    String            @id @default(cuid())
+  date                  DateTime
+  title                 String
+  category              TimeBlockCategory
+  plannedStartTime      String
+  plannedEndTime        String
+  actualStartTime       String?
+  actualEndTime         String?
+  actualDurationMinutes Int?
+  priority              Int               @default(3)
+  energyLevel           Int?
+  status                TimeBlockStatus   @default(planned)
+  note                  String?
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+
+  @@index([date])
+  @@index([category])
+  @@index([status])
+}
+
+model DailyCheckin {
+  id         String   @id @default(cuid())
+  date       DateTime @unique
+  dayType    DayType  @default(normal)
+  sleepStart String?
+  wakeTime   String?
+  mood       Int?
+  motivation Int?
+  stress     Int?
+  note       String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([dayType])
+}
+
+model DailyScore {
+  id            String       @id @default(cuid())
+  date          DateTime     @unique
+  sleepScore    Float        @default(0)
+  focusScore    Float        @default(0)
+  habitScore    Float        @default(0)
+  restScore     Float        @default(0)
+  moodScore     Float        @default(0)
+  priorityScore Float        @default(0)
+  totalScore    Float        @default(0)
+  warningLevel  WarningLevel @default(good)
+  advice        String?
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  @@index([warningLevel])
+}
+
+model DailyPriority {
+  id            String              @id @default(cuid())
+  date          DateTime
+  title         String
+  status        DailyPriorityStatus @default(planned)
+  priorityOrder Int
+  note          String?
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
+
+  @@unique([date, priorityOrder])
+  @@index([date])
+  @@index([status])
+}
+
+model WeeklyGoal {
+  id            String   @id @default(cuid())
+  weekStartDate DateTime
+  title         String
+  category      String
+  targetValue   Float
+  currentValue  Float    @default(0)
+  unit          String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([weekStartDate, title])
+  @@index([weekStartDate])
+  @@index([category])
 }
