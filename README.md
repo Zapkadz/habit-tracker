@@ -4,7 +4,7 @@ Local-first web app for planning daily routines, tracking habits, balancing work
 
 ## Current Phase
 
-Phase 1: Data models and seed data.
+Phase 2: Habit tracker core.
 
 The foundation includes:
 
@@ -17,6 +17,8 @@ The foundation includes:
 - Placeholder pages for Today, Week, Month, Habits, Analytics, and Settings
 - Prisma models for habits, logs, time blocks, check-ins, scores, priorities, and weekly goals
 - Seed habits for the first local dataset
+- Habit management UI
+- Daily habit checklist with saved habit logs
 
 No authentication, deployment, AI, or full feature logic is included in the MVP foundation.
 
@@ -104,6 +106,14 @@ The initial schema includes:
 - `WeeklyGoal`
 
 The local SQLite database file is ignored by Git.
+
+## Phase 2 Features
+
+- Create, edit, delete, activate, and deactivate habits.
+- Set habit category, icon key, weight, and weekly target.
+- Track daily habit status from the Today page.
+- Supported daily statuses: `done`, `partial`, `skipped`, and `missed`.
+- Clear a habit log when a date should return to an unrecorded state.
 
 ## Navigation
 
