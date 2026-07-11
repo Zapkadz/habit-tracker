@@ -4,7 +4,7 @@ Local-first web app for planning daily routines, tracking habits, balancing work
 
 ## Current Phase
 
-Phase 4: Daily scoring and warnings.
+Phase 5: Weekly balance dashboard.
 
 The foundation includes:
 
@@ -25,6 +25,7 @@ The foundation includes:
 - Basic daily totals for sleep, focus, rest, and planned time
 - Daily Balance Score
 - Rule-based warnings and supportive advice
+- Weekly balance dashboard with goals, 7-day overview, and weekly warnings
 
 No authentication, deployment, AI, or full feature logic is included in the MVP foundation.
 
@@ -137,6 +138,15 @@ The local SQLite database file is ignored by Git.
 - Adjust focus and rest expectations by day type.
 - Show supportive warnings for low sleep, overwork, low rest, unrealistic plans, low motivation, and high stress.
 - Show a good balance message when the day has healthy signals.
+
+## Phase 5 Features
+
+- Select and review a Monday-based week.
+- Show 7-day overview cards with day type, Daily Balance Score, sleep, focus, rest, and warning state.
+- Calculate weekly score, average sleep, total focus, total rest, overloaded days, and recovery coverage.
+- Create, update, and delete weekly goals with current progress and target values.
+- Flag weekly goals that are behind the expected pace.
+- Show weekly warnings for overloaded weeks, low average sleep, weak recovery, and behind goals.
 
 ## Navigation
 

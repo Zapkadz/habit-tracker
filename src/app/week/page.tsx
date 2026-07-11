@@ -1,83 +1,51 @@
-import {
-  Activity,
-  BatteryCharging,
-  CalendarRange,
-  Moon,
-  Target,
-  Timer,
-} from "lucide-react";
-import { PagePlaceholder } from "@/components/layout/page-placeholder";
+import { WeekSelector } from "@/components/week/week-selector";
+import { WeeklyDayOverview } from "@/components/week/weekly-day-overview";
+import { WeeklyGoalPanel } from "@/components/week/weekly-goal-panel";
+import { WeeklySummaryCards } from "@/components/week/weekly-summary-cards";
+import { WeeklyWarningPanel } from "@/components/week/weekly-warning-panel";
+import { getWeeklyBalance } from "@/server/weekly-balance";
 
-export default function WeekPage() {
+type WeekPageProps = {
+  searchParams?: Promise<{
+    weekStart?: string;
+    notice?: string;
+    error?: string;
+  }>;
+};
+
+export default async function WeekPage({ searchParams }: WeekPageProps) {
+  const params = searchParams ? await searchParams : {};
+  const balance = await getWeeklyBalance(params.weekStart);
+
   return (
-    <PagePlaceholder
-      eyebrow="Weekly Balance"
-      title="Balance workload, sleep, and recovery"
-      description="The week page will show seven-day balance, weekly goals, overload count, recovery coverage, and simple warnings."
-      metrics={[
-        {
-          label: "Week Score",
-          value: "--",
-          caption: "Aggregate balance arrives after daily scoring.",
-          tone: "blue",
-        },
-        {
-          label: "Average Sleep",
-          value: "--",
-          caption: "Calculated from daily check-ins.",
-          tone: "green",
-        },
-        {
-          label: "Focus Total",
-          value: "0h",
-          caption: "Study, work, and deep work blocks.",
-          tone: "neutral",
-        },
-        {
-          label: "Recovery",
-          value: "0d",
-          caption: "Recovery and rest days across the week.",
-          tone: "amber",
-        },
-      ]}
-      sections={[
-        {
-          title: "7-Day Overview",
-          description:
-            "Each day will show day type, balance score, sleep, focus, rest, and warning state.",
-          icon: CalendarRange,
-        },
-        {
-          title: "Weekly Goals",
-          description:
-            "Targets like N2 hours, Java Spring hours, and Kaiwa sessions will track progress.",
-          icon: Target,
-        },
-        {
-          title: "Sleep Average",
-          description:
-            "Weekly sleep patterns will help catch repeated sleep debt before it becomes normal.",
-          icon: Moon,
-        },
-        {
-          title: "Focus Load",
-          description:
-            "Total focus time will separate productive challenge from unsustainable overload.",
-          icon: Timer,
-        },
-        {
-          title: "Recovery Coverage",
-          description:
-            "The page will make it obvious when a lighter day or recovery block is needed.",
-          icon: BatteryCharging,
-        },
-        {
-          title: "Weekly Warnings",
-          description:
-            "Warnings will flag too many heavy days, low recovery, poor sleep average, and behind goals.",
-          icon: Activity,
-        },
-      ]}
-    />
+    <div className="space-y-4">
+      <section className="rounded-lg border border-slate-200 bg-white px-5 py-5 shadow-sm">
+        <WeekSelector weekStartDate={balance.weekStartDate} />
+      </section>
+
+      {params.notice ? (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">
+          {params.notice}
+        </div>
+      ) : null}
+      {params.error ? (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-900">
+          {params.error}
+        </div>
+      ) : null}
+
+      <WeeklySummaryCards balance={balance} />
+
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(340px,0.75fr)]">
+        <div className="space-y-4">
+          <WeeklyDayOverview days={balance.days} />
+          <WeeklyGoalPanel
+            weekStartDate={balance.weekStartDate}
+            goals={balance.goals}
+          />
+        </div>
+        <WeeklyWarningPanel balance={balance} />
+      </section>
+    </div>
   );
 }
