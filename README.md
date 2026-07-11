@@ -4,7 +4,7 @@ Local-first web app for planning daily routines, tracking habits, balancing work
 
 ## Current Phase
 
-Phase 8: Motivation system.
+Phase 9: Local polish.
 
 The foundation includes:
 
@@ -29,6 +29,7 @@ The foundation includes:
 - Monthly habit review dashboard with grid, charts, stats, and trend warnings
 - Analytics dashboard with date ranges, long-range trends, plan accuracy, category breakdown, and insights
 - Motivation system with soft streak, routine rank, recovery guidance, weekly mission, identity reminders, and 90-day challenge concept
+- Local Settings page with JSON/CSV export, backup guidance, app defaults, loading states, and error handling
 
 No authentication, deployment, AI, or full feature logic is included in the MVP foundation.
 
@@ -81,6 +82,16 @@ npm run dev
 
 Open the local URL printed by Next.js.
 
+## Daily Use Flow
+
+1. Open `Today`.
+2. Pick the current date and set the day type in the daily check-in.
+3. Add up to 3 priorities.
+4. Add time blocks for sleep, focus, rest, meals, and personal time.
+5. Mark habit status during or at the end of the day.
+6. Fill mood, motivation, stress, sleep start, and wake time.
+7. Review Week, Month, and Analytics after several logged days.
+
 ## Validation
 
 Run lint:
@@ -116,6 +127,17 @@ The initial schema includes:
 - `WeeklyGoal`
 
 The local SQLite database file is ignored by Git.
+
+## Export and Backup
+
+Open `Settings` to download:
+
+- Full JSON export
+- Habit logs CSV
+- Time blocks CSV
+- Check-ins CSV
+
+For a database backup, stop the dev server first, then copy `dev.db` or the file pointed to by `DATABASE_URL`.
 
 ## Phase 2 Features
 
@@ -177,6 +199,14 @@ The local SQLite database file is ignored by Git.
 - Reuse Weekly Goals as Weekly Missions, with suggestions when no mission exists.
 - Show serious identity reminders on Today.
 - Add a lightweight 90-day challenge concept card for future campaign mode.
+
+## Phase 9 Features
+
+- Replace Settings placeholder with local app info, database info, score defaults, export tools, and backup guidance.
+- Add full JSON export for core local tables.
+- Add CSV export for habit logs, time blocks, and daily check-ins.
+- Add route-level loading states for daily, weekly, monthly, analytics, habits, and settings pages.
+- Add a simple app error boundary for recoverable page failures.
 
 ## Navigation
 
