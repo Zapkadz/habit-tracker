@@ -1,83 +1,52 @@
-import {
-  BarChart3,
-  CalendarDays,
-  Grid3X3,
-  LineChart,
-  Medal,
-  TrendingDown,
-} from "lucide-react";
-import { PagePlaceholder } from "@/components/layout/page-placeholder";
+import { DailyProgressChart } from "@/components/month/daily-progress-chart";
+import { MonthSelector } from "@/components/month/month-selector";
+import { MonthlyAnalysisPanel } from "@/components/month/monthly-analysis-panel";
+import { MonthlyHabitGrid } from "@/components/month/monthly-habit-grid";
+import { MonthlySummaryCards } from "@/components/month/monthly-summary-cards";
+import { MoodTrendChart } from "@/components/month/mood-trend-chart";
+import { SleepTrendChart } from "@/components/month/sleep-trend-chart";
+import { TopHabits } from "@/components/month/top-habits";
+import { WeakHabits } from "@/components/month/weak-habits";
+import { WeeklyProgressChart } from "@/components/month/weekly-progress-chart";
+import { getMonthlyBalance } from "@/server/monthly-balance";
 
-export default function MonthPage() {
+type MonthPageProps = {
+  searchParams?: Promise<{
+    month?: string;
+  }>;
+};
+
+export default async function MonthPage({ searchParams }: MonthPageProps) {
+  const params = searchParams ? await searchParams : {};
+  const review = await getMonthlyBalance(params.month);
+
   return (
-    <PagePlaceholder
-      eyebrow="Monthly Habit Dashboard"
-      title="Review consistency and progress trends"
-      description="The month page will be the review surface: habit grid, charts, stats, top habits, weak habits, mood trend, and sleep trend."
-      metrics={[
-        {
-          label: "Completion",
-          value: "--%",
-          caption: "Monthly weighted habit completion.",
-          tone: "blue",
-        },
-        {
-          label: "Best Streak",
-          value: "--",
-          caption: "Soft streaks will avoid harsh resets.",
-          tone: "green",
-        },
-        {
-          label: "Weak Habits",
-          value: "--",
-          caption: "Habits needing attention.",
-          tone: "amber",
-        },
-        {
-          label: "Sleep Trend",
-          value: "--",
-          caption: "Monthly sleep direction.",
-          tone: "neutral",
-        },
-      ]}
-      sections={[
-        {
-          title: "Monthly Habit Grid",
-          description:
-            "A compact Excel-style grid will show habit consistency across the month.",
-          icon: Grid3X3,
-        },
-        {
-          title: "Daily Progress Chart",
-          description:
-            "Daily completion percentages will make momentum and dips easy to scan.",
-          icon: BarChart3,
-        },
-        {
-          title: "Weekly Progress Chart",
-          description:
-            "Weeks will be compared so the month does not hide overloaded periods.",
-          icon: LineChart,
-        },
-        {
-          title: "Top Habits",
-          description:
-            "Strong habits will be separated from habits that need a different plan.",
-          icon: Medal,
-        },
-        {
-          title: "Weak Habits",
-          description:
-            "Skipped and missed patterns will be reviewed without turning the app into a blame machine.",
-          icon: TrendingDown,
-        },
-        {
-          title: "Monthly Summary",
-          description:
-            "The review will answer whether sleep, mood, motivation, and routine consistency improved.",
-          icon: CalendarDays,
-        },
-      ]}
-    />
+    <div className="space-y-4">
+      <section className="rounded-lg border border-slate-200 bg-white px-5 py-5 shadow-sm">
+        <MonthSelector month={review.month} />
+      </section>
+
+      <MonthlySummaryCards review={review} />
+
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.85fr)]">
+        <div className="space-y-4">
+          <div className="grid gap-4 xl:grid-cols-2">
+            <DailyProgressChart data={review.dailyProgress} />
+            <WeeklyProgressChart data={review.weeklyProgress} />
+          </div>
+          <MonthlyHabitGrid review={review} />
+          <div className="grid gap-4 xl:grid-cols-2">
+            <MoodTrendChart data={review.dailyProgress} />
+            <SleepTrendChart data={review.dailyProgress} />
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          <MonthlyAnalysisPanel review={review} />
+          <TopHabits habits={review.topHabits} />
+          <WeakHabits habits={review.weakHabits} />
+        </div>
+      </section>
+    </div>
   );
 }
