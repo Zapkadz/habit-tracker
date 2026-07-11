@@ -4,7 +4,7 @@ Local-first web app for planning daily routines, tracking habits, balancing work
 
 ## Current Phase
 
-Phase 5: Weekly balance dashboard.
+Phase 6: Monthly review dashboard.
 
 The foundation includes:
 
@@ -26,6 +26,7 @@ The foundation includes:
 - Daily Balance Score
 - Rule-based warnings and supportive advice
 - Weekly balance dashboard with goals, 7-day overview, and weekly warnings
+- Monthly habit review dashboard with grid, charts, stats, and trend warnings
 
 No authentication, deployment, AI, or full feature logic is included in the MVP foundation.
 
@@ -147,6 +148,15 @@ The local SQLite database file is ignored by Git.
 - Create, update, and delete weekly goals with current progress and target values.
 - Flag weekly goals that are behind the expected pace.
 - Show weekly warnings for overloaded weeks, low average sleep, weak recovery, and behind goals.
+
+## Phase 6 Features
+
+- Select and review a calendar month.
+- Show compact Excel-style habit grid across all days in the month.
+- Calculate monthly completion, tracked days, average sleep, best streak, weak days, and weak habits.
+- Show daily progress, weekly progress, mood/motivation, and sleep/focus/rest charts.
+- Highlight top habits and weak habits.
+- Show monthly warnings for low consistency, low sleep, high stress, weak habits, and declining recent progress.
 
 ## Navigation
 
