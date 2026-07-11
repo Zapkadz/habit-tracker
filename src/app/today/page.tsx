@@ -1,4 +1,6 @@
 import { CalendarDays, Gauge, ListChecks, Target } from "lucide-react";
+import { IdentityReminderCard } from "@/components/motivation/identity-reminder-card";
+import { RecoveryMessageCard } from "@/components/motivation/recovery-message-card";
 import { DailyCheckinForm } from "@/components/today/daily-checkin-form";
 import { PriorityList } from "@/components/today/priority-list";
 import { TimeBlockTimeline } from "@/components/today/time-block-timeline";
@@ -26,6 +28,7 @@ import { calculateDailyBalance } from "@/lib/scoring/daily-score";
 import { getDailyCheckin } from "@/server/daily-checkins";
 import { getDailyPriorities } from "@/server/daily-priorities";
 import { getHabitChecklist } from "@/server/habit-logs";
+import { getMotivationSummary } from "@/server/motivation";
 import { getTimeBlocks } from "@/server/time-blocks";
 
 type TodayPageProps = {
@@ -39,11 +42,12 @@ type TodayPageProps = {
 export default async function TodayPage({ searchParams }: TodayPageProps) {
   const params = searchParams ? await searchParams : {};
   const selectedDate = parseDateString(params.date);
-  const [habits, checkin, priorities, timeBlocks] = await Promise.all([
+  const [habits, checkin, priorities, timeBlocks, motivation] = await Promise.all([
     getHabitChecklist(selectedDate),
     getDailyCheckin(selectedDate),
     getDailyPriorities(selectedDate),
     getTimeBlocks(selectedDate),
+    getMotivationSummary(selectedDate),
   ]);
   const plannedMinutes = timeBlocks.reduce(
     (sum, block) =>
@@ -200,6 +204,8 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
         </div>
 
         <div className="space-y-4">
+          <IdentityReminderCard motivation={motivation} />
+          <RecoveryMessageCard motivation={motivation} />
           <TodayScoreCard score={score} />
           <DailyCheckinForm date={selectedDate} checkin={checkin} />
           <TodayAnalysisPanel score={score} />

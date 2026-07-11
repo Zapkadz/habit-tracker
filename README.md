@@ -4,7 +4,7 @@ Local-first web app for planning daily routines, tracking habits, balancing work
 
 ## Current Phase
 
-Phase 7: Analytics dashboard.
+Phase 8: Motivation system.
 
 The foundation includes:
 
@@ -28,6 +28,7 @@ The foundation includes:
 - Weekly balance dashboard with goals, 7-day overview, and weekly warnings
 - Monthly habit review dashboard with grid, charts, stats, and trend warnings
 - Analytics dashboard with date ranges, long-range trends, plan accuracy, category breakdown, and insights
+- Motivation system with soft streak, routine rank, recovery guidance, weekly mission, identity reminders, and 90-day challenge concept
 
 No authentication, deployment, AI, or full feature logic is included in the MVP foundation.
 
@@ -167,6 +168,15 @@ The local SQLite database file is ignored by Git.
 - Compare planned and recorded actual time by day.
 - Break down planned and actual time by time block category.
 - Show rule-based insights for repeated risk days, low sleep, high stress, low rest with heavy focus, weak plan accuracy, and declining habit trends.
+
+## Phase 8 Features
+
+- Show a soft streak that counts steady days without harsh resets.
+- Calculate a 30-day routine rank from score, habit completion, sleep, and risk days.
+- Show recovery guidance based on recent sleep, stress, focus, rest, and planning signals.
+- Reuse Weekly Goals as Weekly Missions, with suggestions when no mission exists.
+- Show serious identity reminders on Today.
+- Add a lightweight 90-day challenge concept card for future campaign mode.
 
 ## Navigation
 

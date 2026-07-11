@@ -8,7 +8,11 @@ import { HabitCompletionTrendChart } from "@/components/analytics/habit-completi
 import { MoodStressTrendChart } from "@/components/analytics/mood-stress-trend-chart";
 import { PlanAccuracyChart } from "@/components/analytics/plan-accuracy-chart";
 import { SleepTrendChart } from "@/components/analytics/sleep-trend-chart";
+import { ChallengeConceptCard } from "@/components/motivation/challenge-concept-card";
+import { RecoveryMessageCard } from "@/components/motivation/recovery-message-card";
+import { RoutineRankCard } from "@/components/motivation/routine-rank-card";
 import { getAnalyticsReview } from "@/server/analytics";
+import { getMotivationSummary } from "@/server/motivation";
 
 type AnalyticsPageProps = {
   searchParams?: Promise<{
@@ -23,6 +27,7 @@ export default async function AnalyticsPage({
 }: AnalyticsPageProps) {
   const params = searchParams ? await searchParams : {};
   const review = await getAnalyticsReview(params);
+  const motivation = await getMotivationSummary(review.endDate);
 
   return (
     <div className="space-y-4">
@@ -54,7 +59,12 @@ export default async function AnalyticsPage({
           <CategoryBreakdownChart data={review.categoryBreakdown} />
         </div>
 
-        <AnalyticsInsightPanel review={review} />
+        <div className="space-y-4">
+          <RoutineRankCard motivation={motivation} />
+          <RecoveryMessageCard motivation={motivation} />
+          <ChallengeConceptCard motivation={motivation} />
+          <AnalyticsInsightPanel review={review} />
+        </div>
       </section>
     </div>
   );

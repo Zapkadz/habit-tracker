@@ -1,8 +1,11 @@
+import { SoftStreakCard } from "@/components/motivation/soft-streak-card";
+import { WeeklyMissionCard } from "@/components/motivation/weekly-mission-card";
 import { WeekSelector } from "@/components/week/week-selector";
 import { WeeklyDayOverview } from "@/components/week/weekly-day-overview";
 import { WeeklyGoalPanel } from "@/components/week/weekly-goal-panel";
 import { WeeklySummaryCards } from "@/components/week/weekly-summary-cards";
 import { WeeklyWarningPanel } from "@/components/week/weekly-warning-panel";
+import { getMotivationSummary } from "@/server/motivation";
 import { getWeeklyBalance } from "@/server/weekly-balance";
 
 type WeekPageProps = {
@@ -16,6 +19,7 @@ type WeekPageProps = {
 export default async function WeekPage({ searchParams }: WeekPageProps) {
   const params = searchParams ? await searchParams : {};
   const balance = await getWeeklyBalance(params.weekStart);
+  const motivation = await getMotivationSummary(balance.weekEndDate);
 
   return (
     <div className="space-y-4">
@@ -44,7 +48,11 @@ export default async function WeekPage({ searchParams }: WeekPageProps) {
             goals={balance.goals}
           />
         </div>
-        <WeeklyWarningPanel balance={balance} />
+        <div className="space-y-4">
+          <WeeklyMissionCard motivation={motivation} />
+          <SoftStreakCard motivation={motivation} />
+          <WeeklyWarningPanel balance={balance} />
+        </div>
       </section>
     </div>
   );

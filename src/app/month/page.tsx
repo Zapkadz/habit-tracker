@@ -8,6 +8,9 @@ import { SleepTrendChart } from "@/components/month/sleep-trend-chart";
 import { TopHabits } from "@/components/month/top-habits";
 import { WeakHabits } from "@/components/month/weak-habits";
 import { WeeklyProgressChart } from "@/components/month/weekly-progress-chart";
+import { RoutineRankCard } from "@/components/motivation/routine-rank-card";
+import { SoftStreakCard } from "@/components/motivation/soft-streak-card";
+import { getMotivationSummary } from "@/server/motivation";
 import { getMonthlyBalance } from "@/server/monthly-balance";
 
 type MonthPageProps = {
@@ -19,6 +22,7 @@ type MonthPageProps = {
 export default async function MonthPage({ searchParams }: MonthPageProps) {
   const params = searchParams ? await searchParams : {};
   const review = await getMonthlyBalance(params.month);
+  const motivation = await getMotivationSummary(review.endDate);
 
   return (
     <div className="space-y-4">
@@ -42,6 +46,8 @@ export default async function MonthPage({ searchParams }: MonthPageProps) {
         </div>
 
         <div className="space-y-4">
+          <RoutineRankCard motivation={motivation} />
+          <SoftStreakCard motivation={motivation} />
           <MonthlyAnalysisPanel review={review} />
           <TopHabits habits={review.topHabits} />
           <WeakHabits habits={review.weakHabits} />
