@@ -62,16 +62,19 @@ export function WeeklyDayOverview({ days }: WeeklyDayOverviewProps) {
       </div>
 
       <div className="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-7">
-        {days.map((day) => (
-          <Link
-            key={day.date}
-            href={`/today?date=${day.date}`}
-            className={`rounded-lg border p-3 transition-colors hover:border-slate-400 ${
-              day.hasData
-                ? "border-slate-200 bg-white"
-                : "border-dashed border-slate-200 bg-slate-50"
-            }`}
-          >
+        {days.map((day) => {
+          const isComplete = day.score.dataStatus.isComplete;
+
+          return (
+            <Link
+              key={day.date}
+              href={`/today?date=${day.date}`}
+              className={`rounded-lg border p-3 transition-colors hover:border-slate-400 ${
+                day.hasData
+                  ? "border-slate-200 bg-white"
+                  : "border-dashed border-slate-200 bg-slate-50"
+              }`}
+            >
             <div className="flex items-start justify-between gap-2">
               <div>
                 <p className="text-sm font-semibold text-slate-950">
@@ -83,7 +86,11 @@ export function WeeklyDayOverview({ days }: WeeklyDayOverviewProps) {
                 variant="outline"
                 className={`rounded-lg ${warningTone[day.score.warningLevel]}`}
               >
-                {day.hasData ? warningLabel[day.score.warningLevel] : "Empty"}
+                {!day.hasData
+                  ? "Empty"
+                  : isComplete
+                    ? warningLabel[day.score.warningLevel]
+                    : "Incomplete"}
               </Badge>
             </div>
 
@@ -92,7 +99,7 @@ export function WeeklyDayOverview({ days }: WeeklyDayOverviewProps) {
                 Daily score
               </p>
               <p className="mt-1 text-3xl font-semibold text-slate-950">
-                {day.hasData ? day.score.totalScore : "--"}
+                {isComplete ? day.score.totalScore : "--"}
               </p>
               <p className="mt-1 text-xs text-slate-500">
                 {DAY_TYPE_LABELS[day.dayType]}
@@ -116,8 +123,9 @@ export function WeeklyDayOverview({ days }: WeeklyDayOverviewProps) {
                 value={formatDuration(day.score.metrics.restMinutes)}
               />
             </div>
-          </Link>
-        ))}
+            </Link>
+          );
+        })}
       </div>
     </section>
   );

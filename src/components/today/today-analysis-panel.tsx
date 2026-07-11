@@ -60,6 +60,9 @@ export function TodayAnalysisPanel({ score }: TodayAnalysisPanelProps) {
             <p className="mt-2 text-xl font-semibold text-slate-950">
               {formatDuration(metrics.focusMinutes)}
             </p>
+            <p className="mt-1 text-xs text-slate-500">
+              Planned {formatDuration(metrics.plannedFocusMinutes)}
+            </p>
           </div>
 
           <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
@@ -69,6 +72,9 @@ export function TodayAnalysisPanel({ score }: TodayAnalysisPanelProps) {
             </p>
             <p className="mt-2 text-xl font-semibold text-slate-950">
               {formatDuration(metrics.restMinutes)}
+            </p>
+            <p className="mt-1 text-xs text-slate-500">
+              Planned {formatDuration(metrics.plannedRestMinutes)}
             </p>
           </div>
 
@@ -84,6 +90,15 @@ export function TodayAnalysisPanel({ score }: TodayAnalysisPanelProps) {
         </div>
 
         <div className="space-y-2 rounded-lg border border-slate-200 bg-white p-3 text-sm text-slate-600">
+          <div className="flex items-center justify-between gap-3">
+            <span>Data status</span>
+            <Badge
+              variant="outline"
+              className="rounded-lg border-slate-300 bg-slate-50 text-slate-700"
+            >
+              {score.scoreLabel}
+            </Badge>
+          </div>
           <div className="flex items-center justify-between gap-3">
             <span>Workload level</span>
             <Badge

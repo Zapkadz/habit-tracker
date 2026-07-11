@@ -11,7 +11,7 @@ export type RecoveryMessageResult = {
 };
 
 function getLatestTrackedDay(days: AnalyticsDayPoint[]) {
-  return [...days].reverse().find((day) => day.hasData) ?? null;
+  return [...days].reverse().find((day) => day.score.dataStatus.isComplete) ?? null;
 }
 
 export function calculateRecoveryMessage(

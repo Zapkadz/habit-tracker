@@ -129,19 +129,22 @@ export function calculateHabitCompletionPercent(
   statuses: MonthlyHabitDayStatus[],
   denominator: number
 ) {
-  if (denominator <= 0) {
+  const skippedCount = statuses.filter((status) => status === "skipped").length;
+  const adjustedDenominator = Math.max(denominator - skippedCount, 0);
+
+  if (adjustedDenominator <= 0) {
     return 0;
   }
 
   const weightedCompletion = statuses.reduce((sum, status) => {
-    if (!status) {
+    if (!status || status === "skipped") {
       return sum;
     }
 
     return sum + HABIT_STATUS_WEIGHTS[status];
   }, 0);
 
-  return round((weightedCompletion / denominator) * 100);
+  return Math.min(round((weightedCompletion / adjustedDenominator) * 100), 100);
 }
 
 function getLongestCompletionStreak(days: MonthlyDayReview[]) {
@@ -149,7 +152,11 @@ function getLongestCompletionStreak(days: MonthlyDayReview[]) {
   let bestStreak = 0;
 
   for (const day of days) {
-    if (!day.isFuture && day.score.metrics.habitCompletionPercent >= 60) {
+    if (
+      !day.isFuture &&
+      day.score.dataStatus.isComplete &&
+      day.score.metrics.habitCompletionPercent >= 60
+    ) {
       currentStreak += 1;
       bestStreak = Math.max(bestStreak, currentStreak);
     } else if (!day.isFuture) {
@@ -161,7 +168,9 @@ function getLongestCompletionStreak(days: MonthlyDayReview[]) {
 }
 
 function getTrendDirection(days: MonthlyDayReview[]) {
-  const elapsedDays = days.filter((day) => !day.isFuture);
+  const elapsedDays = days.filter(
+    (day) => !day.isFuture && day.score.dataStatus.isComplete
+  );
   const recentDays = elapsedDays.slice(-7);
   const previousDays = elapsedDays.slice(-14, -7);
   const recentAverage = average(
@@ -187,7 +196,9 @@ function getTrendDirection(days: MonthlyDayReview[]) {
 }
 
 function getBestDay(days: MonthlyDayReview[]) {
-  const elapsedDays = days.filter((day) => !day.isFuture);
+  const elapsedDays = days.filter(
+    (day) => !day.isFuture && day.score.dataStatus.isComplete
+  );
 
   if (elapsedDays.length === 0) {
     return null;
@@ -209,7 +220,9 @@ function getBestDay(days: MonthlyDayReview[]) {
 function getWeeklyProgress(days: MonthlyDayReview[]) {
   const groups = new Map<string, MonthlyDayReview[]>();
 
-  for (const day of days.filter((item) => !item.isFuture)) {
+  for (const day of days.filter(
+    (item) => !item.isFuture && item.score.dataStatus.isComplete
+  )) {
     groups.set(day.weekKey, [...(groups.get(day.weekKey) ?? []), day]);
   }
 
@@ -240,11 +253,11 @@ export function calculateMonthlyReview(
   input: MonthlyReviewInput
 ): MonthlyReviewResult {
   const elapsedDays = input.days.filter((day) => !day.isFuture);
-  const trackedDays = elapsedDays.filter((day) => day.hasData);
-  const habitCompletions = elapsedDays.map(
+  const completeDays = elapsedDays.filter((day) => day.score.dataStatus.isComplete);
+  const habitCompletions = completeDays.map(
     (day) => day.score.metrics.habitCompletionPercent
   );
-  const sleepMinutes = elapsedDays
+  const sleepMinutes = completeDays
     .map((day) => day.score.metrics.sleepMinutes)
     .filter((minutes) => minutes > 0);
   const weakHabits = [...input.habits]
@@ -254,7 +267,7 @@ export function calculateMonthlyReview(
     .filter((habit) => habit.completionPercent > 0)
     .sort((first, second) => second.completionPercent - first.completionPercent)
     .slice(0, 5);
-  const weakDayCount = elapsedDays.filter(
+  const weakDayCount = completeDays.filter(
     (day) => day.score.metrics.habitCompletionPercent < 50
   ).length;
 
@@ -262,14 +275,14 @@ export function calculateMonthlyReview(
     ...input,
     stats: {
       completionPercent: round(average(habitCompletions)),
-      trackedDayCount: trackedDays.length,
+      trackedDayCount: completeDays.length,
       elapsedDayCount: elapsedDays.length,
       totalDayCount: input.days.length,
       averageSleepMinutes: round(average(sleepMinutes)),
       sleepDayCount: sleepMinutes.length,
-      averageMood: nullableAverage(elapsedDays.map((day) => day.mood)),
-      averageMotivation: nullableAverage(elapsedDays.map((day) => day.motivation)),
-      averageStress: nullableAverage(elapsedDays.map((day) => day.stress)),
+      averageMood: nullableAverage(completeDays.map((day) => day.mood)),
+      averageMotivation: nullableAverage(completeDays.map((day) => day.motivation)),
+      averageStress: nullableAverage(completeDays.map((day) => day.stress)),
       bestDay: getBestDay(input.days),
       weakDayCount,
       bestStreak: getLongestCompletionStreak(input.days),
@@ -283,23 +296,26 @@ export function calculateMonthlyReview(
     dailyProgress: input.days.map((day) => ({
       date: day.date,
       label: day.dayOfMonth,
-      completion: day.isFuture
+      completion: day.isFuture || !day.score.dataStatus.isComplete
         ? null
         : day.score.metrics.habitCompletionPercent,
-      score: day.isFuture ? null : day.score.totalScore,
-      focusHours: day.isFuture
+      score: day.isFuture || !day.score.dataStatus.isComplete ? null : day.score.totalScore,
+      focusHours: day.isFuture || !day.score.dataStatus.isComplete
         ? null
         : minutesToChartHours(day.score.metrics.focusMinutes),
-      restHours: day.isFuture
+      restHours: day.isFuture || !day.score.dataStatus.isComplete
         ? null
         : minutesToChartHours(day.score.metrics.restMinutes),
       sleepHours:
-        day.isFuture || day.score.metrics.sleepMinutes <= 0
+        day.isFuture ||
+        !day.score.dataStatus.isComplete ||
+        day.score.metrics.sleepMinutes <= 0
           ? null
           : minutesToChartHours(day.score.metrics.sleepMinutes),
-      mood: day.isFuture ? null : day.mood,
-      motivation: day.isFuture ? null : day.motivation,
-      stress: day.isFuture ? null : day.stress,
+      mood: day.isFuture || !day.score.dataStatus.isComplete ? null : day.mood,
+      motivation:
+        day.isFuture || !day.score.dataStatus.isComplete ? null : day.motivation,
+      stress: day.isFuture || !day.score.dataStatus.isComplete ? null : day.stress,
     })),
     weeklyProgress: getWeeklyProgress(input.days),
     topHabits,

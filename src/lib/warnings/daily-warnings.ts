@@ -10,6 +10,7 @@ import {
 } from "@/lib/constants/warnings";
 import type {
   DailyComponentScores,
+  DailyDataStatus,
   DailyMetrics,
   DailyWarning,
   ScoringCheckin,
@@ -42,17 +43,35 @@ export function calculateDailyWarnings({
   metrics,
   checkin,
   scores,
+  dataStatus,
 }: {
   dayType: DayType;
   metrics: DailyMetrics;
   checkin: ScoringCheckin;
   scores: DailyComponentScores;
+  dataStatus: DailyDataStatus;
 }) {
   const warnings: DailyWarning[] = [];
   const sleepHours = metrics.sleepMinutes / 60;
   const focusHours = metrics.focusMinutes / 60;
   const plannedHours = metrics.plannedMinutes / 60;
   const dayTypeAdjustment = DAY_TYPE_TARGET_ADJUSTMENTS[dayType];
+
+  if (!dataStatus.isComplete) {
+    const missing =
+      dataStatus.missingSignals.length > 0
+        ? dataStatus.missingSignals.join(", ")
+        : "core signals";
+
+    return [
+      warning(
+        "incomplete-day",
+        "notice",
+        dataStatus.state === "empty" ? "No data recorded" : "Day is incomplete",
+        `Add ${missing} before trusting this day's score.`
+      ),
+    ];
+  }
 
   if (metrics.sleepMinutes > 0 && sleepHours < WARNING_THRESHOLDS.strongLowSleepHours) {
     warnings.push(

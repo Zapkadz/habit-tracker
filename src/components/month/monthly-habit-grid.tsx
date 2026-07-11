@@ -28,7 +28,7 @@ export function MonthlyHabitGrid({ review }: MonthlyHabitGridProps) {
   const gridTemplateColumns = `minmax(180px,1.5fr) repeat(${review.days.length},24px) 68px`;
 
   return (
-    <section className="rounded-lg border border-slate-200 bg-white shadow-sm">
+    <section className="min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm [contain:layout_paint]">
       <div className="border-b border-slate-100 px-4 py-4">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -74,8 +74,8 @@ export function MonthlyHabitGrid({ review }: MonthlyHabitGridProps) {
           </p>
         </div>
       ) : (
-        <div className="overflow-x-auto">
-          <div className="min-w-max p-4">
+        <div className="max-w-full overflow-x-auto [contain:layout_paint]">
+          <div className="w-max min-w-full p-4">
             <div
               className="grid items-center gap-1 text-xs"
               style={{ gridTemplateColumns }}
@@ -107,7 +107,7 @@ export function MonthlyHabitGrid({ review }: MonthlyHabitGridProps) {
                     </p>
                     <p className="mt-0.5 text-xs text-slate-500">
                       {HABIT_CATEGORY_LABELS[habit.category]} - weight{" "}
-                      {habit.weight}
+                      {habit.weight} - target {habit.targetPerWeek}/week
                     </p>
                   </div>
                   {review.days.map((day) => {

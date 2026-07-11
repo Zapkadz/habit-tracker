@@ -22,6 +22,7 @@ export const SCORE_LABELS = {
   okay: "Okay",
   warning: "Warning",
   burnoutRisk: "Burnout Risk",
+  incomplete: "Incomplete",
 } as const;
 
 export const DEFAULT_SLEEP_TARGET_HOURS = {

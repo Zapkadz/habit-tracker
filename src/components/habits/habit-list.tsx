@@ -15,6 +15,7 @@ import {
 import { HabitForm } from "@/components/habits/habit-form";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
 import {
   Table,
   TableBody,
@@ -70,7 +71,7 @@ export function HabitList({ habits }: HabitListProps) {
                   <div>
                     <p className="font-medium text-slate-950">{habit.name}</p>
                     <p className="mt-1 text-xs text-slate-500">
-                      Icon: {habit.icon} · Logs: {habit._count.logs}
+                      Icon: {habit.icon} - Logs: {habit._count.logs}
                     </p>
                   </div>
                   <details className="group rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
@@ -135,14 +136,19 @@ export function HabitList({ habits }: HabitListProps) {
                   </form>
                   <form action={deleteHabit}>
                     <input name="id" type="hidden" value={habit.id} />
-                    <Button
-                      type="submit"
+                    <ConfirmSubmitButton
+                      confirmMessage={
+                        habit._count.logs > 0
+                          ? "This habit has history. It will be archived instead of deleted."
+                          : "Delete this habit permanently?"
+                      }
                       variant="destructive"
                       size="icon-sm"
-                      title="Delete"
+                      title={habit._count.logs > 0 ? "Archive" : "Delete"}
+                      pendingLabel="..."
                     >
                       <Trash2 className="size-4" aria-hidden="true" />
-                    </Button>
+                    </ConfirmSubmitButton>
                   </form>
                 </div>
               </TableCell>

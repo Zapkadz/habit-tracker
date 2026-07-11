@@ -11,7 +11,10 @@ export type SoftStreakResult = {
 };
 
 function isGoodDay(day: AnalyticsDayPoint) {
-  return day.hasData && day.score.metrics.habitCompletionPercent >= 60;
+  return (
+    day.score.dataStatus.isComplete &&
+    day.score.metrics.habitCompletionPercent >= 60
+  );
 }
 
 export function calculateSoftStreak(days: AnalyticsDayPoint[]): SoftStreakResult {
@@ -22,21 +25,21 @@ export function calculateSoftStreak(days: AnalyticsDayPoint[]): SoftStreakResult
     if (isGoodDay(day)) {
       currentRun += 1;
       bestStreak = Math.max(bestStreak, currentRun);
-    } else if (day.hasData) {
+    } else if (day.score.dataStatus.isComplete) {
       currentRun = 0;
     }
   }
 
   const goodDays = days.filter(isGoodDay).length;
-  const trackedDays = days.filter((day) => day.hasData).length;
+  const trackedDays = days.filter((day) => day.score.dataStatus.isComplete).length;
   const consistencyPercent =
-    days.length > 0 ? Math.round((goodDays / days.length) * 100) : 0;
+    trackedDays > 0 ? Math.round((goodDays / trackedDays) * 100) : 0;
   const currentStreak = days.reduceRight((streak, day) => {
     if (streak === -1) {
       return -1;
     }
 
-    if (!day.hasData) {
+    if (!day.score.dataStatus.isComplete) {
       return streak;
     }
 
@@ -54,6 +57,6 @@ export function calculateSoftStreak(days: AnalyticsDayPoint[]): SoftStreakResult
     message:
       trackedDays === 0
         ? "No streak yet. Log one honest day and the system can start helping."
-        : `${goodDays}/${days.length} days were steady. This is a soft streak, not a punishment system.`,
+        : `${goodDays}/${trackedDays} complete days were steady. This is a soft streak, not a punishment system.`,
   };
 }

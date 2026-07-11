@@ -32,7 +32,7 @@ export function AnalyticsSummaryCards({ review }: AnalyticsSummaryCardsProps) {
     {
       label: "Avg Score",
       value: summary.trackedDayCount > 0 ? `${summary.averageScore}` : "--",
-      caption: `${summary.trackedDayCount}/${summary.totalDayCount} tracked days`,
+      caption: `${summary.trackedDayCount}/${summary.totalDayCount} complete days`,
       icon: Gauge,
       className: "border-blue-100 bg-blue-50 text-blue-950",
     },

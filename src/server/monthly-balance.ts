@@ -17,8 +17,8 @@ import { dateToDateString } from "@/lib/dates/week-utils";
 import { dateStringToUtcDate } from "@/lib/dates/date-utils";
 import { prisma } from "@/lib/prisma";
 import { calculateDailyBalance } from "@/lib/scoring/daily-score";
+import { calculateTargetHabitCompletionPercent } from "@/lib/scoring/habit-targets";
 import {
-  calculateHabitCompletionPercent,
   calculateMonthlyReview,
   type MonthlyHabitDayStatus,
 } from "@/lib/scoring/monthly-score";
@@ -107,7 +107,6 @@ export async function getMonthlyBalance(inputMonth?: string) {
   const displayHabits = habits.filter(
     (habit) => habit.isActive || habit.logs.length > 0
   );
-  const activeHabits = habits.filter((habit) => habit.isActive);
   const checkinsByDate = new Map(
     checkins.map((checkin) => [dateToDateString(checkin.date), checkin])
   );
@@ -128,10 +127,16 @@ export async function getMonthlyBalance(inputMonth?: string) {
     const checkin = checkinsByDate.get(date) ?? null;
     const dayPriorities = prioritiesByDate.get(date) ?? [];
     const dayTimeBlocks = timeBlocksByDate.get(date) ?? [];
-    const dayHabits = activeHabits.map(({ logs, ...habit }) => ({
-      ...habit,
-      log: logs.find((log) => dateToDateString(log.date) === date) ?? null,
-    }));
+    const dayHabits = displayHabits
+      .map(({ logs, ...habit }) => ({
+        ...habit,
+        log: logs.find((log) => dateToDateString(log.date) === date) ?? null,
+      }))
+      .filter(
+        (habit) =>
+          dateToDateString(habit.createdAt) <= date &&
+          (habit.isActive || Boolean(habit.log))
+      );
     const hasHabitLog = displayHabits.some((habit) =>
       habit.logs.some((log) => dateToDateString(log.date) === date)
     );
@@ -174,7 +179,11 @@ export async function getMonthlyBalance(inputMonth?: string) {
       {}
     );
     const elapsedStatuses = elapsedDates.map((date) => statuses[date]);
-    const denominator = habit.isActive ? elapsedDates.length : habit.logs.length;
+    const eligibleElapsedDates = elapsedDates.filter(
+      (date) =>
+        dateToDateString(habit.createdAt) <= date &&
+        (habit.isActive || Boolean(statuses[date]))
+    );
 
     return {
       id: habit.id,
@@ -189,9 +198,10 @@ export async function getMonthlyBalance(inputMonth?: string) {
       skippedCount: countStatus(elapsedStatuses, "skipped"),
       missedCount: countStatus(elapsedStatuses, "missed"),
       emptyCount: elapsedStatuses.filter((status) => !status).length,
-      completionPercent: calculateHabitCompletionPercent(
+      completionPercent: calculateTargetHabitCompletionPercent(
         elapsedStatuses,
-        denominator
+        habit.targetPerWeek,
+        eligibleElapsedDates.length
       ),
       bestStreak: getHabitBestStreak(elapsedStatuses),
     };

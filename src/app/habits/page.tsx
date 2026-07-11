@@ -1,7 +1,6 @@
 import { Activity, Archive, ListChecks, Plus, Weight } from "lucide-react";
 import { HabitForm } from "@/components/habits/habit-form";
 import { HabitList } from "@/components/habits/habit-list";
-import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -48,12 +47,6 @@ export default async function HabitsPage({ searchParams }: HabitsPageProps) {
               appear in the daily checklist.
             </p>
           </div>
-          <Badge
-            variant="outline"
-            className="w-fit rounded-lg border-slate-300 bg-slate-50 text-slate-600"
-          >
-            Phase 2 core
-          </Badge>
         </div>
       </section>
 

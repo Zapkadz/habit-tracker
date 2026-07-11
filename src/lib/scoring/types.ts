@@ -32,6 +32,8 @@ export type ScoringTimeBlock = {
   category: TimeBlockCategory;
   plannedStartTime: string;
   plannedEndTime: string;
+  actualStartTime?: string | null;
+  actualEndTime?: string | null;
   actualDurationMinutes?: number | null;
   status: TimeBlockStatus;
 };
@@ -48,6 +50,10 @@ export type DailyMetrics = {
   sleepMinutes: number;
   focusMinutes: number;
   restMinutes: number;
+  plannedFocusMinutes: number;
+  plannedRestMinutes: number;
+  actualFocusMinutes: number;
+  actualRestMinutes: number;
   plannedMinutes: number;
   blockCount: number;
   completedBlocks: number;
@@ -67,6 +73,13 @@ export type DailyComponentScores = {
   priorityScore: number;
 };
 
+export type DailyDataStatus = {
+  state: "empty" | "provisional" | "complete";
+  isComplete: boolean;
+  hasAnyData: boolean;
+  missingSignals: string[];
+};
+
 export type DailyWarning = {
   id: string;
   level: WarningLevel;
@@ -78,6 +91,7 @@ export type DailyBalanceResult = {
   dayType: DayType;
   metrics: DailyMetrics;
   scores: DailyComponentScores;
+  dataStatus: DailyDataStatus;
   totalScore: number;
   scoreLabel: ScoreLabel;
   warningLevel: WarningLevel;

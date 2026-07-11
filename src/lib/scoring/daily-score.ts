@@ -4,11 +4,18 @@ import {
   SCORE_THRESHOLDS,
 } from "@/lib/constants/scoring";
 import {
-  FOCUS_CATEGORIES,
-  REST_CATEGORIES,
-} from "@/lib/constants/planner";
+  calculateDailyDataStatus,
+  getActualBlockMinutes,
+  getPlannedBlockMinutes,
+  isFocusBlock,
+  isRestBlock,
+} from "@/lib/scoring/data-status";
 import { minutesBetween } from "@/lib/dates/time-utils";
-import { calculateDailyWarnings, getDailyAdvice, getHighestWarningLevel } from "@/lib/warnings/daily-warnings";
+import {
+  calculateDailyWarnings,
+  getDailyAdvice,
+  getHighestWarningLevel,
+} from "@/lib/warnings/daily-warnings";
 import { calculateFocusScore } from "@/lib/scoring/focus-score";
 import { calculateHabitScore } from "@/lib/scoring/habit-score";
 import { calculateMoodScore } from "@/lib/scoring/mood-score";
@@ -19,24 +26,8 @@ import type {
   DailyBalanceResult,
   DailyMetrics,
   DailyScoringInput,
-  ScoringTimeBlock,
 } from "@/lib/scoring/types";
 import type { ScoreLabel } from "@/types";
-
-const focusCategories = new Set<string>(FOCUS_CATEGORIES);
-const restCategories = new Set<string>(REST_CATEGORIES);
-
-function blockPlannedMinutes(block: ScoringTimeBlock) {
-  return minutesBetween(block.plannedStartTime, block.plannedEndTime);
-}
-
-function blockUsefulMinutes(block: ScoringTimeBlock) {
-  if (block.status === "skipped") {
-    return 0;
-  }
-
-  return block.actualDurationMinutes ?? blockPlannedMinutes(block);
-}
 
 function roundScore(score: number) {
   return Math.min(Math.max(Math.round(score), 0), 100);
@@ -68,22 +59,28 @@ function calculateHabitCompletionPercent(input: DailyScoringInput) {
 
 function calculateMetrics(input: DailyScoringInput): DailyMetrics {
   const plannedMinutes = input.timeBlocks.reduce(
-    (sum, block) => sum + blockPlannedMinutes(block),
+    (sum, block) => sum + getPlannedBlockMinutes(block),
     0
   );
+  const plannedFocusMinutes = input.timeBlocks
+    .filter(isFocusBlock)
+    .reduce((sum, block) => sum + getPlannedBlockMinutes(block), 0);
+  const plannedRestMinutes = input.timeBlocks
+    .filter(isRestBlock)
+    .reduce((sum, block) => sum + getPlannedBlockMinutes(block), 0);
   const sleepBlockMinutes = input.timeBlocks
     .filter((block) => block.category === "sleep")
-    .reduce((sum, block) => sum + blockUsefulMinutes(block), 0);
+    .reduce((sum, block) => sum + getActualBlockMinutes(block), 0);
   const checkinSleepMinutes =
     input.checkin?.sleepStart && input.checkin?.wakeTime
       ? minutesBetween(input.checkin.sleepStart, input.checkin.wakeTime)
       : 0;
   const focusMinutes = input.timeBlocks
-    .filter((block) => focusCategories.has(block.category))
-    .reduce((sum, block) => sum + blockUsefulMinutes(block), 0);
+    .filter(isFocusBlock)
+    .reduce((sum, block) => sum + getActualBlockMinutes(block), 0);
   const restMinutes = input.timeBlocks
-    .filter((block) => restCategories.has(block.category))
-    .reduce((sum, block) => sum + blockUsefulMinutes(block), 0);
+    .filter(isRestBlock)
+    .reduce((sum, block) => sum + getActualBlockMinutes(block), 0);
   const donePriorityCount = input.priorities.filter(
     (priority) => priority.status === "done"
   ).length;
@@ -92,6 +89,10 @@ function calculateMetrics(input: DailyScoringInput): DailyMetrics {
     sleepMinutes: sleepBlockMinutes || checkinSleepMinutes,
     focusMinutes,
     restMinutes,
+    plannedFocusMinutes,
+    plannedRestMinutes,
+    actualFocusMinutes: focusMinutes,
+    actualRestMinutes: restMinutes,
     plannedMinutes,
     blockCount: input.timeBlocks.length,
     completedBlocks: input.timeBlocks.filter((block) => block.status === "done")
@@ -109,6 +110,7 @@ export function calculateDailyBalance(
   input: DailyScoringInput
 ): DailyBalanceResult {
   const metrics = calculateMetrics(input);
+  const dataStatus = calculateDailyDataStatus(input, metrics);
   const scores = {
     sleepScore: calculateSleepScore(metrics.sleepMinutes),
     focusScore: calculateFocusScore(metrics.focusMinutes, input.dayType),
@@ -117,7 +119,7 @@ export function calculateDailyBalance(
     moodScore: calculateMoodScore(input.checkin),
     priorityScore: calculatePriorityScore(input.priorities),
   };
-  const totalScore = roundScore(
+  const rawTotalScore = roundScore(
     scores.sleepScore * DAILY_SCORE_WEIGHTS.sleep +
       scores.focusScore * DAILY_SCORE_WEIGHTS.focus +
       scores.habitScore * DAILY_SCORE_WEIGHTS.habit +
@@ -129,14 +131,19 @@ export function calculateDailyBalance(
     metrics,
     checkin: input.checkin,
     scores,
+    dataStatus,
   });
+  const totalScore = dataStatus.isComplete ? rawTotalScore : 0;
 
   return {
     dayType: input.dayType,
     metrics,
     scores,
+    dataStatus,
     totalScore,
-    scoreLabel: getScoreLabel(totalScore),
+    scoreLabel: dataStatus.isComplete
+      ? getScoreLabel(totalScore)
+      : SCORE_LABELS.incomplete,
     warningLevel: getHighestWarningLevel(warnings),
     advice: getDailyAdvice(warnings, totalScore),
     warnings,

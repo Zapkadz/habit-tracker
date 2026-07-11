@@ -1,4 +1,5 @@
 import type { DayType } from "@/lib/constants/day-types";
+import { getTodayDateString } from "@/lib/dates/date-utils";
 import type { DailyBalanceResult } from "@/lib/scoring/types";
 
 export type WeeklyGoalSource = {
@@ -49,6 +50,7 @@ export type WeeklyBalanceInput = {
   days: WeeklyBalanceDay[];
   goals: WeeklyGoalSource[];
   expectedGoalProgressPercent: number;
+  referenceDate?: string;
 };
 
 export type WeeklyBalanceResult = {
@@ -101,12 +103,14 @@ function isRecoveryDay(day: WeeklyBalanceDay) {
   );
 }
 
-function getSuggestedRecoveryDay(days: WeeklyBalanceDay[]) {
-  if (days.length === 0) {
+function getSuggestedRecoveryDay(days: WeeklyBalanceDay[], referenceDate: string) {
+  const candidateDays = days.filter((day) => day.date >= referenceDate);
+
+  if (candidateDays.length === 0) {
     return null;
   }
 
-  return [...days].sort((first, second) => {
+  return [...candidateDays].sort((first, second) => {
     const firstFocus = first.score.metrics.focusMinutes;
     const secondFocus = second.score.metrics.focusMinutes;
     const firstRest = first.score.metrics.restMinutes;
@@ -123,14 +127,17 @@ function getSuggestedRecoveryDay(days: WeeklyBalanceDay[]) {
 export function calculateWeeklyBalance(
   input: WeeklyBalanceInput
 ): WeeklyBalanceResult {
-  const trackedDays = input.days.filter((day) => day.hasData);
-  const sleepMinutes = trackedDays
+  const completeDays = input.days.filter((day) => day.score.dataStatus.isComplete);
+  const sleepMinutes = completeDays
     .map((day) => day.score.metrics.sleepMinutes)
     .filter((minutes) => minutes > 0);
   const goals = input.goals.map((goal) =>
     getGoalProgress(goal, input.expectedGoalProgressPercent)
   );
-  const suggestedRecoveryDay = getSuggestedRecoveryDay(input.days);
+  const suggestedRecoveryDay = getSuggestedRecoveryDay(
+    input.days,
+    input.referenceDate ?? getTodayDateString()
+  );
 
   return {
     weekStartDate: input.weekStartDate,
@@ -138,24 +145,24 @@ export function calculateWeeklyBalance(
     days: input.days,
     goals,
     summary: {
-      weekScore: round(average(trackedDays.map((day) => day.score.totalScore))),
-      trackedDayCount: trackedDays.length,
+      weekScore: round(average(completeDays.map((day) => day.score.totalScore))),
+      trackedDayCount: completeDays.length,
       averageSleepMinutes: round(average(sleepMinutes)),
       sleepDayCount: sleepMinutes.length,
-      totalFocusMinutes: trackedDays.reduce(
+      totalFocusMinutes: completeDays.reduce(
         (sum, day) => sum + day.score.metrics.focusMinutes,
         0
       ),
-      totalRestMinutes: trackedDays.reduce(
+      totalRestMinutes: completeDays.reduce(
         (sum, day) => sum + day.score.metrics.restMinutes,
         0
       ),
       overloadedDayCount: input.days.filter(isOverloadedDay).length,
       recoveryDayCount: input.days.filter(isRecoveryDay).length,
-      warningDayCount: trackedDays.filter(
+      warningDayCount: completeDays.filter(
         (day) => day.score.warningLevel === "warning"
       ).length,
-      riskDayCount: trackedDays.filter((day) => day.score.warningLevel === "risk")
+      riskDayCount: completeDays.filter((day) => day.score.warningLevel === "risk")
         .length,
       behindGoalCount: goals.filter((goal) => goal.isBehind).length,
       suggestedRecoveryDate: suggestedRecoveryDay?.date ?? null,

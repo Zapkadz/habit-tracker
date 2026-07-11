@@ -39,7 +39,7 @@ export function AppInfoPanel({ databaseUrl }: AppInfoPanelProps) {
               App Info
             </CardTitle>
             <CardDescription>
-              Local-first MVP settings. These values are read-only in Phase 9.
+              Local-first settings. These values are read-only for now.
             </CardDescription>
           </div>
           <Badge

@@ -34,7 +34,7 @@ export function MonthlySummaryCards({ review }: MonthlySummaryCardsProps) {
     {
       label: "Tracked Days",
       value: `${stats.trackedDayCount}`,
-      caption: "Days with habits, plan, or check-in",
+      caption: "Complete scoring days",
       icon: Activity,
       className: "border-slate-200 bg-white text-slate-950",
     },

@@ -9,6 +9,8 @@ export type RoutineRankResult = {
   nextTarget: string;
 };
 
+const MIN_COMPLETE_DAYS_FOR_RANK = 7;
+
 function getSleepScore(summary: AnalyticsSummary) {
   const hours = summary.averageSleepMinutes / 60;
 
@@ -54,6 +56,17 @@ function getNextTarget(score: number) {
 }
 
 export function calculateRoutineRank(summary: AnalyticsSummary): RoutineRankResult {
+  if (summary.trackedDayCount < MIN_COMPLETE_DAYS_FOR_RANK) {
+    return {
+      key: "Unranked",
+      label: "Need More Data",
+      score: 0,
+      description:
+        "Log at least 7 complete days before the routine rank becomes useful.",
+      nextTarget: "Complete sleep, habits, focus, rest, and check-in for 7 days.",
+    };
+  }
+
   const rankScore = Math.round(
     summary.averageScore * 0.35 +
       summary.averageHabitCompletion * 0.3 +

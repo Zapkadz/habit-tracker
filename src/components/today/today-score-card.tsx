@@ -19,6 +19,7 @@ const scoreTone = {
   Okay: "border-amber-200 bg-amber-50 text-amber-950",
   Warning: "border-orange-200 bg-orange-50 text-orange-950",
   "Burnout Risk": "border-rose-200 bg-rose-50 text-rose-950",
+  Incomplete: "border-slate-200 bg-slate-50 text-slate-950",
 } as const;
 
 function ScoreLine({ label, value }: { label: string; value: number }) {
@@ -39,6 +40,8 @@ function ScoreLine({ label, value }: { label: string; value: number }) {
 }
 
 export function TodayScoreCard({ score }: TodayScoreCardProps) {
+  const isComplete = score.dataStatus.isComplete;
+
   return (
     <Card
       className={`rounded-lg border shadow-sm ring-0 ${
@@ -53,7 +56,9 @@ export function TodayScoreCard({ score }: TodayScoreCardProps) {
               Daily Balance Score
             </CardTitle>
             <CardDescription className="text-current/65">
-              Live score from sleep, focus, habits, rest, and mood.
+              {isComplete
+                ? "Live score from sleep, focus, habits, rest, and mood."
+                : "Complete the core signals before trusting the score."}
             </CardDescription>
           </div>
           <Badge
@@ -67,7 +72,7 @@ export function TodayScoreCard({ score }: TodayScoreCardProps) {
       <CardContent className="space-y-4">
         <div className="flex items-end gap-2">
           <span className="text-5xl font-semibold tracking-normal">
-            {score.totalScore}
+            {isComplete ? score.totalScore : "--"}
           </span>
           <span className="pb-1 text-sm font-medium text-current/65">/100</span>
         </div>

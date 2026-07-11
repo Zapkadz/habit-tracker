@@ -1,4 +1,4 @@
-import { CalendarClock, Database, ShieldCheck } from "lucide-react";
+import { Database, ShieldCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export function TopBar() {
@@ -15,13 +15,6 @@ export function TopBar() {
         </div>
 
         <div className="flex shrink-0 items-center gap-2">
-          <Badge
-            variant="outline"
-            className="hidden rounded-lg border-slate-300 bg-white text-slate-600 md:inline-flex"
-          >
-            <CalendarClock className="size-3" aria-hidden="true" />
-            Phase 0
-          </Badge>
           <Badge
             variant="outline"
             className="rounded-lg border-slate-300 bg-white text-slate-600"

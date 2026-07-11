@@ -4,7 +4,7 @@ Local-first web app for planning daily routines, tracking habits, balancing work
 
 ## Current Phase
 
-Phase 9: Local polish.
+Phase 10: Core correctness and stabilization.
 
 The foundation includes:
 
@@ -30,6 +30,9 @@ The foundation includes:
 - Analytics dashboard with date ranges, long-range trends, plan accuracy, category breakdown, and insights
 - Motivation system with soft streak, routine rank, recovery guidance, weekly mission, identity reminders, and 90-day challenge concept
 - Local Settings page with JSON/CSV export, backup guidance, app defaults, loading states, and error handling
+- Stabilized scoring rules for incomplete days, planned vs actual time, skipped habits, and weekly habit targets
+- Safe habit removal that archives habits with history instead of deleting logs
+- Node test coverage for core scoring, analytics, motivation, and habit safety rules
 
 No authentication, deployment, AI, or full feature logic is included in the MVP foundation.
 
@@ -90,7 +93,8 @@ Open the local URL printed by Next.js.
 4. Add time blocks for sleep, focus, rest, meals, and personal time.
 5. Mark habit status during or at the end of the day.
 6. Fill mood, motivation, stress, sleep start, and wake time.
-7. Review Week, Month, and Analytics after several logged days.
+7. Record actual time on completed time blocks when possible.
+8. Review Week, Month, and Analytics after several complete days.
 
 ## Validation
 
@@ -98,6 +102,12 @@ Run lint:
 
 ```bash
 npm run lint
+```
+
+Run tests:
+
+```bash
+npm run test
 ```
 
 Run production build:
@@ -163,6 +173,9 @@ For a database backup, stop the dev server first, then copy `dev.db` or the file
 - Adjust focus and rest expectations by day type.
 - Show supportive warnings for low sleep, overwork, low rest, unrealistic plans, low motivation, and high stress.
 - Show a good balance message when the day has healthy signals.
+- Treat days with missing core signals as `Incomplete` instead of scoring them as poor days.
+- Count actual time for focus, rest, and sleep; planned time stays a planning signal only.
+- Treat skipped or missing habit logs as neutral for scoring, while `missed` remains zero.
 
 ## Phase 5 Features
 
@@ -177,10 +190,11 @@ For a database backup, stop the dev server first, then copy `dev.db` or the file
 
 - Select and review a calendar month.
 - Show compact Excel-style habit grid across all days in the month.
-- Calculate monthly completion, tracked days, average sleep, best streak, weak days, and weak habits.
+- Calculate monthly completion, complete days, average sleep, best streak, weak days, and weak habits.
 - Show daily progress, weekly progress, mood/motivation, and sleep/focus/rest charts.
 - Highlight top habits and weak habits.
 - Show monthly warnings for low consistency, low sleep, high stress, weak habits, and declining recent progress.
+- Use `targetPerWeek` when calculating habit progress.
 
 ## Phase 7 Features
 
@@ -198,7 +212,7 @@ For a database backup, stop the dev server first, then copy `dev.db` or the file
 - Show recovery guidance based on recent sleep, stress, focus, rest, and planning signals.
 - Reuse Weekly Goals as Weekly Missions, with suggestions when no mission exists.
 - Show serious identity reminders on Today.
-- Add a lightweight 90-day challenge concept card for future campaign mode.
+- Add a lightweight 90-day challenge concept card for future campaign mode without treating 30-day data as 90-day progress.
 
 ## Phase 9 Features
 
@@ -207,6 +221,18 @@ For a database backup, stop the dev server first, then copy `dev.db` or the file
 - Add CSV export for habit logs, time blocks, and daily check-ins.
 - Add route-level loading states for daily, weekly, monthly, analytics, habits, and settings pages.
 - Add a simple app error boundary for recoverable page failures.
+
+## Phase 10 Features
+
+- Add automated tests with `tsx --test`.
+- Separate planned and actual time in Daily Balance scoring.
+- Mark empty or partially logged days as `Incomplete` and exclude them from score averages, streaks, and rank.
+- Preserve habit history by archiving habits with logs instead of hard deleting them.
+- Keep inactive habits visible in historical analytics when they have logs.
+- Apply weekly habit targets to monthly habit completion.
+- Prevent weekly recovery suggestions from selecting past days.
+- Show `Unranked` until at least 7 complete days exist.
+- Fix Month grid horizontal overflow on small screens.
 
 ## Navigation
 

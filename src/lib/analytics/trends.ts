@@ -166,30 +166,34 @@ function getLongestStreak(days: AnalyticsDayPoint[], predicate: (day: AnalyticsD
 
 function toTrendPoint(day: AnalyticsDayPoint): AnalyticsTrendPoint {
   const { metrics } = day.score;
-  const score = day.hasData ? day.score.totalScore : null;
+  const isComplete = day.score.dataStatus.isComplete;
+  const score = isComplete ? day.score.totalScore : null;
 
   return {
     date: day.date,
     label: day.label,
     score,
-    habitCompletion: day.hasData ? metrics.habitCompletionPercent : null,
-    sleepHours: metrics.sleepMinutes > 0 ? minutesToHours(metrics.sleepMinutes) : null,
-    focusHours: day.hasData ? minutesToHours(metrics.focusMinutes) : null,
-    restHours: day.hasData ? minutesToHours(metrics.restMinutes) : null,
-    mood: day.mood,
-    motivation: day.motivation,
-    stress: day.stress,
+    habitCompletion: isComplete ? metrics.habitCompletionPercent : null,
+    sleepHours:
+      isComplete && metrics.sleepMinutes > 0
+        ? minutesToHours(metrics.sleepMinutes)
+        : null,
+    focusHours: isComplete ? minutesToHours(metrics.focusMinutes) : null,
+    restHours: isComplete ? minutesToHours(metrics.restMinutes) : null,
+    mood: isComplete ? day.mood : null,
+    motivation: isComplete ? day.motivation : null,
+    stress: isComplete ? day.stress : null,
     plannedHours: minutesToHours(day.plannedMinutes),
     actualHours:
       day.actualMinutes === null ? null : minutesToHours(day.actualMinutes),
     planAccuracy: day.planAccuracyPercent,
-    risk: day.hasData && day.score.warningLevel === "risk" ? 1 : 0,
+    risk: isComplete && day.score.warningLevel === "risk" ? 1 : 0,
   };
 }
 
 function getSummary(days: AnalyticsDayPoint[]): AnalyticsSummary {
-  const trackedDays = days.filter((day) => day.hasData);
-  const sleepMinutes = trackedDays
+  const completeDays = days.filter((day) => day.score.dataStatus.isComplete);
+  const sleepMinutes = completeDays
     .map((day) => day.score.metrics.sleepMinutes)
     .filter((minutes) => minutes > 0);
   const plannedMinutes = days.reduce((sum, day) => sum + day.plannedMinutes, 0);
@@ -207,21 +211,21 @@ function getSummary(days: AnalyticsDayPoint[]): AnalyticsSummary {
   const trendPoints = days.map(toTrendPoint);
 
   return {
-    averageScore: round(average(trackedDays.map((day) => day.score.totalScore))),
-    trackedDayCount: trackedDays.length,
+    averageScore: round(average(completeDays.map((day) => day.score.totalScore))),
+    trackedDayCount: completeDays.length,
     totalDayCount: days.length,
     averageSleepMinutes: round(average(sleepMinutes)),
     sleepDayCount: sleepMinutes.length,
-    totalFocusMinutes: trackedDays.reduce(
+    totalFocusMinutes: completeDays.reduce(
       (sum, day) => sum + day.score.metrics.focusMinutes,
       0
     ),
-    totalRestMinutes: trackedDays.reduce(
+    totalRestMinutes: completeDays.reduce(
       (sum, day) => sum + day.score.metrics.restMinutes,
       0
     ),
     averageHabitCompletion: round(
-      average(trackedDays.map((day) => day.score.metrics.habitCompletionPercent))
+      average(completeDays.map((day) => day.score.metrics.habitCompletionPercent))
     ),
     plannedMinutes,
     actualMinutes,
@@ -235,22 +239,26 @@ function getSummary(days: AnalyticsDayPoint[]): AnalyticsSummary {
           day.planAccuracyPercent < 70)
     ).length,
     skippedBlockCount: days.reduce((sum, day) => sum + day.skippedBlockCount, 0),
-    riskDayCount: trackedDays.filter((day) => day.score.warningLevel === "risk")
+    riskDayCount: completeDays.filter((day) => day.score.warningLevel === "risk")
       .length,
-    warningDayCount: trackedDays.filter(
+    warningDayCount: completeDays.filter(
       (day) => day.score.warningLevel === "warning"
     ).length,
     lowSleepStreak: getLongestStreak(
-      trackedDays,
+      days,
       (day) =>
+        day.score.dataStatus.isComplete &&
         day.score.metrics.sleepMinutes > 0 &&
         day.score.metrics.sleepMinutes < 6 * 60
     ),
     highStressStreak: getLongestStreak(
-      trackedDays,
-      (day) => typeof day.stress === "number" && day.stress >= 8
+      days,
+      (day) =>
+        day.score.dataStatus.isComplete &&
+        typeof day.stress === "number" &&
+        day.stress >= 8
     ),
-    lowRestHeavyFocusDayCount: trackedDays.filter(
+    lowRestHeavyFocusDayCount: completeDays.filter(
       (day) =>
         day.score.metrics.focusMinutes >= 6 * 60 &&
         day.score.metrics.restMinutes < 45
