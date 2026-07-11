@@ -12,7 +12,6 @@ import {
   type HabitStatus,
 } from "@/lib/constants/habits";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -20,6 +19,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { cn } from "@/lib/utils";
 
 type ChecklistHabit = Awaited<ReturnType<typeof getHabitChecklist>>[number];
@@ -41,13 +41,16 @@ function categoryLabel(category: HabitCategory) {
 }
 
 function completionPercentage(habits: ChecklistHabit[]) {
-  const activeWeight = habits.reduce((sum, habit) => sum + habit.weight, 0);
+  const scoredHabits = habits.filter(
+    (habit) => habit.log && habit.log.status !== "skipped"
+  );
+  const activeWeight = scoredHabits.reduce((sum, habit) => sum + habit.weight, 0);
 
   if (activeWeight === 0) {
     return 0;
   }
 
-  const completedWeight = habits.reduce((sum, habit) => {
+  const completedWeight = scoredHabits.reduce((sum, habit) => {
     if (habit.log?.status === "done") {
       return sum + habit.weight;
     }
@@ -80,7 +83,7 @@ export function TodayHabitChecklist({
             </CardTitle>
             <CardDescription>
               Active habits for the selected date. Status changes are saved to
-              SQLite.
+              SQLite. Skipped is neutral; missed counts as zero.
             </CardDescription>
           </div>
           <Badge
@@ -137,31 +140,31 @@ export function TodayHabitChecklist({
                         <input name="habitId" type="hidden" value={habit.id} />
                         <input name="date" type="hidden" value={date} />
                         <input name="status" type="hidden" value={status} />
-                        <Button
-                          type="submit"
+                        <PendingSubmitButton
                           variant="outline"
                           size="sm"
                           className={cn(
                             "border-slate-200 bg-white",
                             currentStatus === status && statusTone[status]
                           )}
+                          pendingLabel="..."
                         >
                           {HABIT_STATUS_LABELS[status]}
-                        </Button>
+                        </PendingSubmitButton>
                       </form>
                     ))}
                     {currentStatus ? (
                       <form action={clearHabitLog}>
                         <input name="habitId" type="hidden" value={habit.id} />
                         <input name="date" type="hidden" value={date} />
-                        <Button
-                          type="submit"
+                        <PendingSubmitButton
                           variant="ghost"
                           size="icon-sm"
                           title="Clear log"
+                          pendingLabel="..."
                         >
                           <RotateCcw className="size-4" aria-hidden="true" />
-                        </Button>
+                        </PendingSubmitButton>
                       </form>
                     ) : null}
                   </div>

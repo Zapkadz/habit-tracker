@@ -1,4 +1,5 @@
 import { Gauge } from "lucide-react";
+import { getCompletionMissingItems } from "@/lib/scoring/completion-copy";
 import type { DailyBalanceResult } from "@/lib/scoring/types";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -41,6 +42,7 @@ function ScoreLine({ label, value }: { label: string; value: number }) {
 
 export function TodayScoreCard({ score }: TodayScoreCardProps) {
   const isComplete = score.dataStatus.isComplete;
+  const missingItems = getCompletionMissingItems(score.dataStatus.missingSignals);
 
   return (
     <Card
@@ -88,6 +90,19 @@ export function TodayScoreCard({ score }: TodayScoreCardProps) {
         <p className="rounded-lg border border-current/10 bg-white/70 px-3 py-2 text-sm leading-6 text-current/80">
           {score.advice}
         </p>
+        {!isComplete && missingItems.length > 0 ? (
+          <div className="flex flex-wrap gap-2">
+            {missingItems.map((item) => (
+              <Badge
+                key={item.id}
+                variant="outline"
+                className="rounded-lg border-current/20 bg-white/60 text-current"
+              >
+                Missing {item.label}
+              </Badge>
+            ))}
+          </div>
+        ) : null}
       </CardContent>
     </Card>
   );

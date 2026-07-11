@@ -155,3 +155,25 @@ export async function deleteDailyPriority(formData: FormData) {
   revalidatePath("/today");
   todayRedirect(dateString, "notice", "Priority deleted.");
 }
+
+export async function updateDailyPriorityStatus(formData: FormData) {
+  const id = firstFormValue(formData.get("id"));
+  const dateString = parseDateString(firstFormValue(formData.get("date")));
+  const status = parsePriorityStatus(formData.get("status"));
+
+  if (!id) {
+    todayRedirect(dateString, "error", "Missing priority id.");
+  }
+
+  try {
+    await prisma.dailyPriority.update({
+      where: { id },
+      data: { status },
+    });
+  } catch {
+    todayRedirect(dateString, "error", "Could not update priority status.");
+  }
+
+  revalidatePath("/today");
+  todayRedirect(dateString, "notice", "Priority status updated.");
+}

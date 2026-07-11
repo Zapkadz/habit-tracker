@@ -2,7 +2,6 @@ import type { getDailyCheckin } from "@/server/daily-checkins";
 import { upsertDailyCheckin } from "@/server/daily-checkins";
 import { DAY_TYPE_LABELS } from "@/lib/constants/day-types";
 import { DayTypeSelector } from "@/components/today/day-type-selector";
-import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -12,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 
 type DailyCheckin = Awaited<ReturnType<typeof getDailyCheckin>>;
 
@@ -118,9 +118,9 @@ export function DailyCheckinForm({ date, checkin }: DailyCheckinFormProps) {
             />
           </div>
 
-          <Button type="submit" size="lg" className="w-full sm:w-auto">
+          <PendingSubmitButton size="lg" className="w-full sm:w-auto">
             Save check-in
-          </Button>
+          </PendingSubmitButton>
         </form>
       </CardContent>
     </Card>
