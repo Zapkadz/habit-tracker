@@ -16,6 +16,14 @@ export const SCORE_THRESHOLDS = {
   burnoutRisk: 0,
 } as const;
 
+export const SCORE_LABELS = {
+  excellent: "Excellent",
+  good: "Good",
+  okay: "Okay",
+  warning: "Warning",
+  burnoutRisk: "Burnout Risk",
+} as const;
+
 export const DEFAULT_SLEEP_TARGET_HOURS = {
   min: 7,
   max: 9,

@@ -1,10 +1,11 @@
-import { AlertTriangle, CalendarDays, CheckCircle2, Clock3, ListChecks, Target } from "lucide-react";
+import { CalendarDays, Gauge, ListChecks, Target } from "lucide-react";
 import { DailyCheckinForm } from "@/components/today/daily-checkin-form";
 import { PriorityList } from "@/components/today/priority-list";
 import { TimeBlockTimeline } from "@/components/today/time-block-timeline";
 import { TodayAnalysisPanel } from "@/components/today/today-analysis-panel";
 import { TodayHabitChecklist } from "@/components/today/today-habit-checklist";
-import { Badge } from "@/components/ui/badge";
+import { TodayScoreCard } from "@/components/today/today-score-card";
+import { TodayWarningPanel } from "@/components/today/today-warning-panel";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -21,6 +22,7 @@ import {
   parseDateString,
 } from "@/lib/dates/date-utils";
 import { formatDuration, minutesBetween } from "@/lib/dates/time-utils";
+import { calculateDailyBalance } from "@/lib/scoring/daily-score";
 import { getDailyCheckin } from "@/server/daily-checkins";
 import { getDailyPriorities } from "@/server/daily-priorities";
 import { getHabitChecklist } from "@/server/habit-logs";
@@ -49,6 +51,13 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
     0
   );
   const dayType = checkin?.dayType ?? "normal";
+  const score = calculateDailyBalance({
+    dayType,
+    checkin,
+    habits,
+    priorities,
+    timeBlocks,
+  });
 
   return (
     <div className="space-y-4">
@@ -168,16 +177,16 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
         >
           <CardHeader>
             <CardDescription className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-current/60">
-              <Clock3 className="size-3.5" aria-hidden="true" />
-              Planned time
+              <Gauge className="size-3.5" aria-hidden="true" />
+              Daily score
             </CardDescription>
             <CardTitle className="text-2xl font-semibold">
-              {formatDuration(plannedMinutes)}
+              {score.totalScore}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-xs leading-5 text-current/65">
-              From planned time blocks.
+              {score.scoreLabel} - {formatDuration(plannedMinutes)} planned.
             </p>
           </CardContent>
         </Card>
@@ -191,51 +200,10 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
         </div>
 
         <div className="space-y-4">
+          <TodayScoreCard score={score} />
           <DailyCheckinForm date={selectedDate} checkin={checkin} />
-          <TodayAnalysisPanel
-            checkin={checkin}
-            priorities={priorities}
-            habits={habits}
-            timeBlocks={timeBlocks}
-          />
-
-          <Card className="rounded-lg border border-slate-200 bg-white shadow-sm ring-0">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                <AlertTriangle className="size-4" aria-hidden="true" />
-                Warnings and advice
-              </CardTitle>
-              <CardDescription>
-                Phase 4 will turn these totals into score and warnings.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <Badge
-                variant="outline"
-                className="rounded-lg border-slate-300 bg-slate-50 text-slate-600"
-              >
-                Ready for scoring rules
-              </Badge>
-            </CardContent>
-          </Card>
-
-          <Card className="rounded-lg border border-slate-200 bg-white shadow-sm ring-0">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-base font-semibold">
-                <CheckCircle2 className="size-4" aria-hidden="true" />
-                Daily score
-              </CardTitle>
-              <CardDescription>
-                Score calculation remains intentionally out of Phase 3.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm leading-6 text-slate-600">
-                The data needed for scoring is now captured. Phase 4 can use
-                sleep, focus, rest, habit, mood, and priority signals.
-              </p>
-            </CardContent>
-          </Card>
+          <TodayAnalysisPanel score={score} />
+          <TodayWarningPanel score={score} />
         </div>
       </section>
     </div>
