@@ -4,7 +4,7 @@ Local-first web app for planning daily routines, tracking habits, balancing work
 
 ## Current Phase
 
-Phase 3: Today command center.
+Phase 4: Daily scoring and warnings.
 
 The foundation includes:
 
@@ -23,6 +23,8 @@ The foundation includes:
 - Top 3 daily priorities
 - Time block planning with planned and actual time fields
 - Basic daily totals for sleep, focus, rest, and planned time
+- Daily Balance Score
+- Rule-based warnings and supportive advice
 
 No authentication, deployment, AI, or full feature logic is included in the MVP foundation.
 
@@ -127,6 +129,14 @@ The local SQLite database file is ignored by Git.
 - Create, update, and delete time blocks for the selected date.
 - Track planned and actual time for each block.
 - Review basic daily totals before full scoring arrives.
+
+## Phase 4 Features
+
+- Calculate Sleep, Focus, Habit, Rest, Mood, and Priority scores.
+- Calculate Daily Balance Score from weighted component scores.
+- Adjust focus and rest expectations by day type.
+- Show supportive warnings for low sleep, overwork, low rest, unrealistic plans, low motivation, and high stress.
+- Show a good balance message when the day has healthy signals.
 
 ## Navigation
 
