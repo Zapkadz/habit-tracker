@@ -1,83 +1,61 @@
-import {
-  Activity,
-  BarChart3,
-  Brain,
-  Gauge,
-  LineChart,
-  Moon,
-} from "lucide-react";
-import { PagePlaceholder } from "@/components/layout/page-placeholder";
+import { AnalyticsInsightPanel } from "@/components/analytics/analytics-insight-panel";
+import { AnalyticsRangeSelector } from "@/components/analytics/analytics-range-selector";
+import { AnalyticsSummaryCards } from "@/components/analytics/analytics-summary-cards";
+import { CategoryBreakdownChart } from "@/components/analytics/category-breakdown-chart";
+import { DailyScoreTrendChart } from "@/components/analytics/daily-score-trend-chart";
+import { FocusRestTrendChart } from "@/components/analytics/focus-rest-trend-chart";
+import { HabitCompletionTrendChart } from "@/components/analytics/habit-completion-trend-chart";
+import { MoodStressTrendChart } from "@/components/analytics/mood-stress-trend-chart";
+import { PlanAccuracyChart } from "@/components/analytics/plan-accuracy-chart";
+import { SleepTrendChart } from "@/components/analytics/sleep-trend-chart";
+import { getAnalyticsReview } from "@/server/analytics";
 
-export default function AnalyticsPage() {
+type AnalyticsPageProps = {
+  searchParams?: Promise<{
+    range?: string;
+    start?: string;
+    end?: string;
+  }>;
+};
+
+export default async function AnalyticsPage({
+  searchParams,
+}: AnalyticsPageProps) {
+  const params = searchParams ? await searchParams : {};
+  const review = await getAnalyticsReview(params);
+
   return (
-    <PagePlaceholder
-      eyebrow="Routine Analytics"
-      title="Understand long-term routine patterns"
-      description="Analytics will start basic in the MVP and grow into sleep, focus, rest, mood, stress, plan accuracy, and burnout risk trends."
-      metrics={[
-        {
-          label: "Sleep Trend",
-          value: "--",
-          caption: "Daily check-in data required.",
-          tone: "green",
-        },
-        {
-          label: "Focus Trend",
-          value: "--",
-          caption: "TimeBlock data required.",
-          tone: "blue",
-        },
-        {
-          label: "Stress Trend",
-          value: "--",
-          caption: "Check-in history required.",
-          tone: "amber",
-        },
-        {
-          label: "Plan Accuracy",
-          value: "--",
-          caption: "Plan vs actual data required.",
-          tone: "neutral",
-        },
-      ]}
-      sections={[
-        {
-          title: "Sleep",
-          description:
-            "Sleep duration and debt patterns will be tracked across days and weeks.",
-          icon: Moon,
-        },
-        {
-          title: "Focus Time",
-          description:
-            "Study, work, and deep work trends will show whether workload is realistic.",
-          icon: BarChart3,
-        },
-        {
-          title: "Rest Time",
-          description:
-            "Rest and recovery time will be compared with focus load.",
-          icon: Activity,
-        },
-        {
-          title: "Mood and Motivation",
-          description:
-            "Mood, motivation, and stress will add human context to routine data.",
-          icon: Brain,
-        },
-        {
-          title: "Burnout Risk",
-          description:
-            "Risk will be rule-based first, using sleep, focus, rest, and stress signals.",
-          icon: Gauge,
-        },
-        {
-          title: "Plan Accuracy",
-          description:
-            "Planned versus actual duration will reveal recurring estimation problems.",
-          icon: LineChart,
-        },
-      ]}
-    />
+    <div className="space-y-4">
+      <section className="rounded-lg border border-slate-200 bg-white px-5 py-5 shadow-sm">
+        <AnalyticsRangeSelector
+          startDate={review.startDate}
+          endDate={review.endDate}
+          presetDays={review.presetDays}
+          label={review.label}
+        />
+      </section>
+
+      <AnalyticsSummaryCards review={review} />
+
+      <section className="grid gap-4 xl:grid-cols-[minmax(0,1.4fr)_minmax(360px,0.8fr)]">
+        <div className="space-y-4">
+          <div className="grid gap-4 xl:grid-cols-2">
+            <DailyScoreTrendChart data={review.trends} />
+            <HabitCompletionTrendChart data={review.trends} />
+          </div>
+          <div className="grid gap-4 xl:grid-cols-2">
+            <SleepTrendChart data={review.trends} />
+            <FocusRestTrendChart data={review.trends} />
+          </div>
+          <div className="grid gap-4 xl:grid-cols-2">
+            <MoodStressTrendChart data={review.trends} />
+            <PlanAccuracyChart data={review.trends} />
+          </div>
+          <CategoryBreakdownChart data={review.categoryBreakdown} />
+        </div>
+
+        <AnalyticsInsightPanel review={review} />
+      </section>
+    </div>
   );
 }
