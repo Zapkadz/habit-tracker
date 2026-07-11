@@ -4,7 +4,7 @@ Local-first web app for planning daily routines, tracking habits, balancing work
 
 ## Current Phase
 
-Phase 10: Core correctness and stabilization.
+Phase 11: Daily use UX and input flow polish.
 
 The foundation includes:
 
@@ -33,6 +33,9 @@ The foundation includes:
 - Stabilized scoring rules for incomplete days, planned vs actual time, skipped habits, and weekly habit targets
 - Safe habit removal that archives habits with history instead of deleting logs
 - Node test coverage for core scoring, analytics, motivation, and habit safety rules
+- Today completion guide for missing score signals
+- Time block quick actions for marking done, partial, skipped, or copying planned time to actual time
+- Faster priority and check-in status updates with pending/confirmation states
 
 No authentication, deployment, AI, or full feature logic is included in the MVP foundation.
 
@@ -93,7 +96,7 @@ Open the local URL printed by Next.js.
 4. Add time blocks for sleep, focus, rest, meals, and personal time.
 5. Mark habit status during or at the end of the day.
 6. Fill mood, motivation, stress, sleep start, and wake time.
-7. Record actual time on completed time blocks when possible.
+7. Use time block quick actions to record actual time quickly.
 8. Review Week, Month, and Analytics after several complete days.
 
 ## Validation
@@ -233,6 +236,16 @@ For a database backup, stop the dev server first, then copy `dev.db` or the file
 - Prevent weekly recovery suggestions from selecting past days.
 - Show `Unranked` until at least 7 complete days exist.
 - Fix Month grid horizontal overflow on small screens.
+
+## Phase 11 Features
+
+- Add a Today completion guide that links missing sleep, check-in, habit, focus, and rest signals to the right input sections.
+- Add quick actions for time blocks: mark done, partial, skipped, and actual equals planned.
+- Keep planned time separate from actual time while making actual entry faster.
+- Add quick status buttons for daily priorities.
+- Move time block actual, energy, priority, status, and note fields into an advanced section.
+- Add pending states and delete confirmations to more daily input forms.
+- Explain skipped habit status as neutral while missed remains zero.
 
 ## Navigation
 

@@ -1,8 +1,18 @@
-import { Clock3, Edit3, Plus, Trash2 } from "lucide-react";
+import {
+  CheckCircle2,
+  CircleSlash,
+  Clock3,
+  CopyCheck,
+  Edit3,
+  Plus,
+  Split,
+  Trash2,
+} from "lucide-react";
 import type { getTimeBlocks } from "@/server/time-blocks";
 import {
   createTimeBlock,
   deleteTimeBlock,
+  updateTimeBlockQuickAction,
   updateTimeBlock,
 } from "@/server/time-blocks";
 import {
@@ -15,7 +25,7 @@ import {
 } from "@/lib/constants/planner";
 import { formatDuration, minutesBetween } from "@/lib/dates/time-utils";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
 import {
   Card,
   CardContent,
@@ -25,6 +35,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { cn } from "@/lib/utils";
 
 type TimeBlock = Awaited<ReturnType<typeof getTimeBlocks>>[number];
@@ -61,6 +72,33 @@ const statusTone: Record<TimeBlockStatus, string> = {
   partial: "border-blue-200 bg-blue-50 text-blue-900",
   skipped: "border-rose-200 bg-rose-50 text-rose-900",
 };
+
+const quickActions = [
+  {
+    action: "mark-done",
+    label: "Done",
+    title: "Mark done and fill actual time from planned if missing",
+    icon: CheckCircle2,
+  },
+  {
+    action: "mark-partial",
+    label: "Partial",
+    title: "Mark partial and estimate half of planned time if missing",
+    icon: Split,
+  },
+  {
+    action: "mark-skipped",
+    label: "Skip",
+    title: "Skip this block and record zero actual minutes",
+    icon: CircleSlash,
+  },
+  {
+    action: "actual-planned",
+    label: "Actual = planned",
+    title: "Copy planned start/end into actual time",
+    icon: CopyCheck,
+  },
+] as const;
 
 function CategorySelect({
   id,
@@ -108,19 +146,69 @@ function StatusSelect({
   );
 }
 
+function getActualDuration(block: TimeBlock) {
+  if (typeof block.actualDurationMinutes === "number") {
+    return block.actualDurationMinutes;
+  }
+
+  if (block.actualStartTime && block.actualEndTime) {
+    return minutesBetween(block.actualStartTime, block.actualEndTime);
+  }
+
+  return null;
+}
+
+function TimeBlockQuickActions({
+  date,
+  block,
+}: {
+  date: string;
+  block: TimeBlock;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1.5">
+      {quickActions.map((item) => {
+        const Icon = item.icon;
+
+        return (
+          <form key={item.action} action={updateTimeBlockQuickAction}>
+            <input name="id" type="hidden" value={block.id} />
+            <input name="date" type="hidden" value={date} />
+            <input name="action" type="hidden" value={item.action} />
+            <PendingSubmitButton
+              type="submit"
+              variant="outline"
+              size="sm"
+              title={item.title}
+              pendingLabel="..."
+              className="border-slate-200 bg-white"
+            >
+              <Icon className="size-3.5" aria-hidden="true" />
+              {item.label}
+            </PendingSubmitButton>
+          </form>
+        );
+      })}
+    </div>
+  );
+}
+
 function TimeBlockForm({
   date,
   block,
   mode = "create",
 }: TimeBlockFormProps) {
-  const isEdit = mode === "edit" && block;
+  const editingBlock = mode === "edit" ? block : undefined;
+  const isEdit = Boolean(editingBlock);
   const action = isEdit ? updateTimeBlock : createTimeBlock;
-  const idPrefix = isEdit ? block.id : "new-time-block";
+  const idPrefix = editingBlock?.id ?? "new-time-block";
 
   return (
     <form action={action} className="grid gap-3">
       <input name="date" type="hidden" value={date} />
-      {isEdit ? <input name="id" type="hidden" value={block.id} /> : null}
+      {editingBlock ? (
+        <input name="id" type="hidden" value={editingBlock.id} />
+      ) : null}
 
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_110px_110px]">
         <div className="space-y-2">
@@ -163,83 +251,97 @@ function TimeBlockForm({
         </div>
       </div>
 
-      <div className="grid gap-3 lg:grid-cols-[110px_110px_120px_110px_110px_140px]">
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-actual-start`}>Actual start</Label>
-          <Input
-            id={`${idPrefix}-actual-start`}
-            name="actualStartTime"
-            type="time"
-            defaultValue={block?.actualStartTime ?? ""}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-actual-end`}>Actual end</Label>
-          <Input
-            id={`${idPrefix}-actual-end`}
-            name="actualEndTime"
-            type="time"
-            defaultValue={block?.actualEndTime ?? ""}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-actual-duration`}>Actual min</Label>
-          <Input
-            id={`${idPrefix}-actual-duration`}
-            name="actualDurationMinutes"
-            type="number"
-            min={0}
-            max={1440}
-            defaultValue={block?.actualDurationMinutes ?? ""}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-priority`}>Priority</Label>
-          <Input
-            id={`${idPrefix}-priority`}
-            name="priority"
-            type="number"
-            min={1}
-            max={5}
-            defaultValue={block?.priority ?? 3}
-            required
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-energy`}>Energy</Label>
-          <Input
-            id={`${idPrefix}-energy`}
-            name="energyLevel"
-            type="number"
-            min={1}
-            max={10}
-            defaultValue={block?.energyLevel ?? ""}
-          />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor={`${idPrefix}-status`}>Status</Label>
-          <StatusSelect
-            id={`${idPrefix}-status`}
-            defaultValue={block?.status ?? "planned"}
-          />
-        </div>
-      </div>
+      <details
+        className="rounded-lg border border-slate-200 bg-white px-3 py-2"
+        open={isEdit}
+      >
+        <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold text-slate-700 marker:hidden">
+          <Edit3 className="size-3.5" aria-hidden="true" />
+          Actual & advanced
+        </summary>
+        <div className="mt-3 grid gap-3 border-t border-slate-200 pt-3">
+          <div className="grid gap-3 lg:grid-cols-[110px_110px_120px_110px_110px_140px]">
+            <div className="space-y-2">
+              <Label htmlFor={`${idPrefix}-actual-start`}>Actual start</Label>
+              <Input
+                id={`${idPrefix}-actual-start`}
+                name="actualStartTime"
+                type="time"
+                defaultValue={block?.actualStartTime ?? ""}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`${idPrefix}-actual-end`}>Actual end</Label>
+              <Input
+                id={`${idPrefix}-actual-end`}
+                name="actualEndTime"
+                type="time"
+                defaultValue={block?.actualEndTime ?? ""}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`${idPrefix}-actual-duration`}>Actual min</Label>
+              <Input
+                id={`${idPrefix}-actual-duration`}
+                name="actualDurationMinutes"
+                type="number"
+                min={0}
+                max={1440}
+                defaultValue={block?.actualDurationMinutes ?? ""}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`${idPrefix}-priority`}>Priority</Label>
+              <Input
+                id={`${idPrefix}-priority`}
+                name="priority"
+                type="number"
+                min={1}
+                max={5}
+                defaultValue={block?.priority ?? 3}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`${idPrefix}-energy`}>Energy</Label>
+              <Input
+                id={`${idPrefix}-energy`}
+                name="energyLevel"
+                type="number"
+                min={1}
+                max={10}
+                defaultValue={block?.energyLevel ?? ""}
+              />
+              <p className="text-xs leading-5 text-slate-500">
+                1 = drained, 10 = high focus.
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor={`${idPrefix}-status`}>Status</Label>
+              <StatusSelect
+                id={`${idPrefix}-status`}
+                defaultValue={block?.status ?? "planned"}
+              />
+            </div>
+          </div>
 
-      <div className="space-y-2">
-        <Label htmlFor={`${idPrefix}-note`}>Note</Label>
-        <textarea
-          id={`${idPrefix}-note`}
-          name="note"
-          rows={2}
-          defaultValue={block?.note ?? ""}
-          className="min-h-16 w-full rounded-lg border border-input bg-white px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-        />
-      </div>
+          <div className="space-y-2">
+            <Label htmlFor={`${idPrefix}-note`}>Note</Label>
+            <textarea
+              id={`${idPrefix}-note`}
+              name="note"
+              rows={2}
+              defaultValue={block?.note ?? ""}
+              className="min-h-16 w-full rounded-lg border border-input bg-white px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            />
+          </div>
+        </div>
+      </details>
 
       <div>
-        <Button type="submit" size="lg">
+        <PendingSubmitButton size="lg">
           {isEdit ? "Save block" : "Add block"}
-        </Button>
+        </PendingSubmitButton>
       </div>
     </form>
   );
@@ -277,7 +379,10 @@ export function TimeBlockTimeline({
         </div>
       </CardHeader>
       <CardContent className="space-y-4 pt-4">
-        <details className="rounded-lg border border-slate-200 bg-slate-50 p-3" open>
+        <details
+          className="rounded-lg border border-slate-200 bg-slate-50 p-3"
+          open={timeBlocks.length === 0}
+        >
           <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold text-slate-700 marker:hidden">
             <Plus className="size-4" aria-hidden="true" />
             Add time block
@@ -304,6 +409,7 @@ export function TimeBlockTimeline({
                 block.plannedStartTime,
                 block.plannedEndTime
               );
+              const actualDuration = getActualDuration(block);
 
               return (
                 <div
@@ -346,16 +452,14 @@ export function TimeBlockTimeline({
                           ? ` - Energy ${block.energyLevel}/10`
                           : ""}
                       </p>
-                      {block.actualDurationMinutes ||
+                      {actualDuration !== null ||
                       block.actualStartTime ||
                       block.actualEndTime ? (
                         <p className="mt-1 text-xs text-slate-500">
                           Actual: {block.actualStartTime ?? "--"} to{" "}
                           {block.actualEndTime ?? "--"}
-                          {block.actualDurationMinutes
-                            ? ` - ${formatDuration(
-                                block.actualDurationMinutes
-                              )}`
+                          {actualDuration !== null
+                            ? ` - ${formatDuration(actualDuration)}`
                             : ""}
                         </p>
                       ) : null}
@@ -366,18 +470,22 @@ export function TimeBlockTimeline({
                       ) : null}
                     </div>
 
-                    <form action={deleteTimeBlock}>
-                      <input name="id" type="hidden" value={block.id} />
-                      <input name="date" type="hidden" value={date} />
-                      <Button
-                        type="submit"
-                        variant="destructive"
-                        size="icon-sm"
-                        title="Delete time block"
-                      >
-                        <Trash2 className="size-4" aria-hidden="true" />
-                      </Button>
-                    </form>
+                    <div className="flex flex-col items-start gap-2 lg:items-end">
+                      <TimeBlockQuickActions date={date} block={block} />
+                      <form action={deleteTimeBlock}>
+                        <input name="id" type="hidden" value={block.id} />
+                        <input name="date" type="hidden" value={date} />
+                        <ConfirmSubmitButton
+                          confirmMessage="Delete this time block?"
+                          variant="destructive"
+                          size="icon-sm"
+                          title="Delete time block"
+                          pendingLabel="..."
+                        >
+                          <Trash2 className="size-4" aria-hidden="true" />
+                        </ConfirmSubmitButton>
+                      </form>
+                    </div>
                   </div>
 
                   <details className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">

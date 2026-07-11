@@ -11,6 +11,10 @@ import {
 } from "@/lib/constants/planner";
 import { dateStringToUtcDate, parseDateString } from "@/lib/dates/date-utils";
 import { minutesBetween, parseTimeString } from "@/lib/dates/time-utils";
+import {
+  getTimeBlockQuickUpdate,
+  type TimeBlockQuickAction,
+} from "@/lib/time-blocks/quick-actions";
 
 function firstFormValue(value: FormDataEntryValue | null) {
   return typeof value === "string" ? value.trim() : "";
@@ -40,6 +44,21 @@ function parseStatus(value: FormDataEntryValue | null): TimeBlockStatus {
   }
 
   return "planned";
+}
+
+function parseQuickAction(value: FormDataEntryValue | null): TimeBlockQuickAction {
+  const action = firstFormValue(value);
+
+  if (
+    action === "mark-done" ||
+    action === "mark-partial" ||
+    action === "mark-skipped" ||
+    action === "actual-planned"
+  ) {
+    return action;
+  }
+
+  return "mark-done";
 }
 
 function parseBoundedInteger(
@@ -199,4 +218,45 @@ export async function deleteTimeBlock(formData: FormData) {
 
   revalidatePath("/today");
   todayRedirect(dateString, "notice", "Time block deleted.");
+}
+
+export async function updateTimeBlockQuickAction(formData: FormData) {
+  const id = firstFormValue(formData.get("id"));
+  const dateString = parseDateString(firstFormValue(formData.get("date")));
+  const action = parseQuickAction(formData.get("action"));
+
+  if (!id) {
+    todayRedirect(dateString, "error", "Missing time block id.");
+  }
+
+  try {
+    const block = await prisma.timeBlock.findUnique({
+      where: { id },
+      select: {
+        plannedStartTime: true,
+        plannedEndTime: true,
+        actualStartTime: true,
+        actualEndTime: true,
+        actualDurationMinutes: true,
+      },
+    });
+
+    if (!block) {
+      throw new Error("Time block not found.");
+    }
+
+    await prisma.timeBlock.update({
+      where: { id },
+      data: getTimeBlockQuickUpdate(block, action),
+    });
+  } catch (error) {
+    todayRedirect(
+      dateString,
+      "error",
+      error instanceof Error ? error.message : "Could not update time block."
+    );
+  }
+
+  revalidatePath("/today");
+  todayRedirect(dateString, "notice", "Time block updated.");
 }

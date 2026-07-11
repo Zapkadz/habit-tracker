@@ -4,6 +4,7 @@ import {
   createDailyPriority,
   deleteDailyPriority,
   updateDailyPriority,
+  updateDailyPriorityStatus,
 } from "@/server/daily-priorities";
 import {
   DAILY_PRIORITY_STATUS_LABELS,
@@ -12,7 +13,7 @@ import {
   type DailyPriorityStatus,
 } from "@/lib/constants/planner";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { ConfirmSubmitButton } from "@/components/ui/confirm-submit-button";
 import {
   Card,
   CardContent,
@@ -22,6 +23,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { cn } from "@/lib/utils";
 
 type DailyPriority = Awaited<ReturnType<typeof getDailyPriorities>>[number];
@@ -76,7 +78,7 @@ export function PriorityList({ date, priorities }: PriorityListProps) {
               Top 3 Priorities
             </CardTitle>
             <CardDescription>
-              A day can be successful when the main priorities move.
+              Choose the main outcomes that make the day count.
             </CardDescription>
           </div>
           <Badge
@@ -105,9 +107,9 @@ export function PriorityList({ date, priorities }: PriorityListProps) {
               />
             </div>
             <div className="flex items-end">
-              <Button type="submit" size="lg" className="w-full sm:w-auto">
+              <PendingSubmitButton size="lg" className="w-full sm:w-auto">
                 Add priority
-              </Button>
+              </PendingSubmitButton>
             </div>
           </form>
         ) : (
@@ -159,18 +161,42 @@ export function PriorityList({ date, priorities }: PriorityListProps) {
                     ) : null}
                   </div>
 
-                  <form action={deleteDailyPriority}>
-                    <input name="id" type="hidden" value={priority.id} />
-                    <input name="date" type="hidden" value={date} />
-                    <Button
-                      type="submit"
-                      variant="destructive"
-                      size="icon-sm"
-                      title="Delete priority"
-                    >
-                      <Trash2 className="size-4" aria-hidden="true" />
-                    </Button>
-                  </form>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <div className="flex flex-wrap justify-end gap-1.5">
+                      {DAILY_PRIORITY_STATUSES.map((status) => (
+                        <form key={status} action={updateDailyPriorityStatus}>
+                          <input name="id" type="hidden" value={priority.id} />
+                          <input name="date" type="hidden" value={date} />
+                          <input name="status" type="hidden" value={status} />
+                          <PendingSubmitButton
+                            variant="outline"
+                            size="sm"
+                            className={cn(
+                              "border-slate-200 bg-white",
+                              priority.status === status && statusTone[status]
+                            )}
+                            disabled={priority.status === status}
+                            pendingLabel="..."
+                          >
+                            {DAILY_PRIORITY_STATUS_LABELS[status]}
+                          </PendingSubmitButton>
+                        </form>
+                      ))}
+                    </div>
+                    <form action={deleteDailyPriority}>
+                      <input name="id" type="hidden" value={priority.id} />
+                      <input name="date" type="hidden" value={date} />
+                      <ConfirmSubmitButton
+                        confirmMessage="Delete this priority?"
+                        variant="destructive"
+                        size="icon-sm"
+                        title="Delete priority"
+                        pendingLabel="..."
+                      >
+                        <Trash2 className="size-4" aria-hidden="true" />
+                      </ConfirmSubmitButton>
+                    </form>
+                  </div>
                 </div>
 
                 <details className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
@@ -220,9 +246,9 @@ export function PriorityList({ date, priorities }: PriorityListProps) {
                       />
                     </div>
                     <div>
-                      <Button type="submit" size="lg">
+                      <PendingSubmitButton size="lg">
                         Save priority
-                      </Button>
+                      </PendingSubmitButton>
                     </div>
                   </form>
                 </details>

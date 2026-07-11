@@ -2,6 +2,7 @@ import { CalendarDays, Gauge, ListChecks, Target } from "lucide-react";
 import { IdentityReminderCard } from "@/components/motivation/identity-reminder-card";
 import { RecoveryMessageCard } from "@/components/motivation/recovery-message-card";
 import { DailyCheckinForm } from "@/components/today/daily-checkin-form";
+import { DayCompletionPanel } from "@/components/today/day-completion-panel";
 import { PriorityList } from "@/components/today/priority-list";
 import { TimeBlockTimeline } from "@/components/today/time-block-timeline";
 import { TodayAnalysisPanel } from "@/components/today/today-analysis-panel";
@@ -198,16 +199,25 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.85fr)]">
         <div className="space-y-4">
-          <PriorityList date={selectedDate} priorities={priorities} />
-          <TimeBlockTimeline date={selectedDate} timeBlocks={timeBlocks} />
-          <TodayHabitChecklist date={selectedDate} habits={habits} />
+          <section id="priorities" className="scroll-mt-20">
+            <PriorityList date={selectedDate} priorities={priorities} />
+          </section>
+          <section id="timeline" className="scroll-mt-20">
+            <TimeBlockTimeline date={selectedDate} timeBlocks={timeBlocks} />
+          </section>
+          <section id="habit-checklist" className="scroll-mt-20">
+            <TodayHabitChecklist date={selectedDate} habits={habits} />
+          </section>
         </div>
 
         <div className="space-y-4">
+          <DayCompletionPanel score={score} />
           <IdentityReminderCard motivation={motivation} />
           <RecoveryMessageCard motivation={motivation} />
           <TodayScoreCard score={score} />
-          <DailyCheckinForm date={selectedDate} checkin={checkin} />
+          <section id="daily-checkin" className="scroll-mt-20">
+            <DailyCheckinForm date={selectedDate} checkin={checkin} />
+          </section>
           <TodayAnalysisPanel score={score} />
           <TodayWarningPanel score={score} />
         </div>
