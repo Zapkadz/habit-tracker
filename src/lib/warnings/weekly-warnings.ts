@@ -97,7 +97,7 @@ export function calculateWeeklyWarnings(
       level: "warning",
       title: "Recovery is thin",
       message:
-        "Focus time is building up, but average rest is under 45 minutes on tracked days. Add a real recovery block.",
+        "Focus time is building up, but average rest is under 45 minutes on complete days. Add a real recovery block.",
     });
   }
 

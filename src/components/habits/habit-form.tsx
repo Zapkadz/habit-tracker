@@ -10,9 +10,9 @@ import {
   MIN_HABIT_WEIGHT,
   MIN_TARGET_PER_WEEK,
 } from "@/lib/constants/habits";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 
 type Habit = Awaited<ReturnType<typeof getHabits>>[number];
 
@@ -124,9 +124,9 @@ export function HabitForm({ habit, mode = "create" }: HabitFormProps) {
             />
             Active
           </label>
-          <Button type="submit" size="lg">
+          <PendingSubmitButton size="lg">
             {isEdit ? "Save habit" : "Create habit"}
-          </Button>
+          </PendingSubmitButton>
         </div>
       </div>
     </form>

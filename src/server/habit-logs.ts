@@ -8,6 +8,7 @@ import {
   type HabitStatus,
 } from "@/lib/constants/habits";
 import { dateStringToUtcDate, parseDateString } from "@/lib/dates/date-utils";
+import { dateToDateString } from "@/lib/dates/week-utils";
 
 function firstFormValue(value: FormDataEntryValue | null) {
   return typeof value === "string" ? value.trim() : "";
@@ -44,10 +45,12 @@ export async function getHabitChecklist(dateString: string) {
     },
   });
 
-  return habits.map(({ logs, ...habit }) => ({
-    ...habit,
-    log: logs[0] ?? null,
-  }));
+  return habits
+    .filter((habit) => dateToDateString(habit.createdAt) <= dateString)
+    .map(({ logs, ...habit }) => ({
+      ...habit,
+      log: logs[0] ?? null,
+    }));
 }
 
 export async function updateHabitLogStatus(formData: FormData) {

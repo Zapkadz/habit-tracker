@@ -6,7 +6,8 @@ export type ScoreLabel =
   | "Good"
   | "Okay"
   | "Warning"
-  | "Burnout Risk";
+  | "Burnout Risk"
+  | "Incomplete";
 
 export type TrendDirection = "up" | "down" | "flat";
 

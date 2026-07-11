@@ -30,7 +30,13 @@ export function RoutineRankCard({ motivation }: RoutineRankCardProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-end gap-3">
-          <span className="text-6xl font-semibold leading-none text-slate-950">
+          <span
+            className={
+              rank.key.length > 2
+                ? "text-4xl font-semibold leading-none text-slate-950"
+                : "text-6xl font-semibold leading-none text-slate-950"
+            }
+          >
             {rank.key}
           </span>
           <div className="pb-1">

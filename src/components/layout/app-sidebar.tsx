@@ -62,6 +62,7 @@ export function AppSidebar() {
               <Link
                 key={item.href}
                 href={item.href}
+                aria-current={active ? "page" : undefined}
                 className={cn(
                   "flex h-9 items-center gap-3 rounded-lg px-3 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100 hover:text-slate-950",
                   active &&
@@ -77,10 +78,10 @@ export function AppSidebar() {
 
         <div className="border-t border-slate-200 px-5 py-4">
           <p className="text-xs font-medium uppercase tracking-wider text-slate-400">
-            Local MVP
+            Local First
           </p>
           <p className="mt-1 text-xs leading-5 text-slate-500">
-            No auth. SQLite first. Build in small phases.
+            Private SQLite data on this machine.
           </p>
         </div>
       </aside>
@@ -94,6 +95,7 @@ export function AppSidebar() {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={active ? "page" : undefined}
               className={cn(
                 "flex min-w-0 flex-col items-center justify-center gap-1 px-1 py-2 text-[11px] font-medium text-slate-500",
                 active && "text-slate-950"

@@ -27,7 +27,7 @@ export function WeeklySummaryCards({ balance }: WeeklySummaryCardsProps) {
     {
       label: "Week Score",
       value: summary.trackedDayCount > 0 ? `${summary.weekScore}` : "--",
-      caption: `${summary.trackedDayCount}/7 tracked days`,
+      caption: `${summary.trackedDayCount}/7 complete days`,
       icon: Gauge,
       className: "border-blue-100 bg-blue-50 text-blue-950",
     },

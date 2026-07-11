@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { getHabitRemovalMode } from "@/lib/habits/removal";
 import {
   DEFAULT_HABIT_WEIGHT,
   DEFAULT_TARGET_PER_WEEK,
@@ -178,15 +179,46 @@ export async function deleteHabit(formData: FormData) {
     redirectWithMessage("error", "Missing habit id.");
   }
 
+  let archived = false;
+
   try {
-    await prisma.habit.delete({
+    const habit = await prisma.habit.findUnique({
       where: { id },
+      include: {
+        _count: {
+          select: {
+            logs: true,
+          },
+        },
+      },
     });
-  } catch {
-    redirectWithMessage("error", "Could not delete habit.");
+
+    if (!habit) {
+      throw new Error("Habit not found.");
+    }
+
+    if (getHabitRemovalMode(habit._count.logs) === "archive") {
+      await prisma.habit.update({
+        where: { id },
+        data: { isActive: false },
+      });
+      archived = true;
+    } else {
+      await prisma.habit.delete({
+        where: { id },
+      });
+    }
+  } catch (error) {
+    redirectWithMessage(
+      "error",
+      error instanceof Error ? error.message : "Could not delete habit."
+    );
   }
 
   revalidatePath(HABITS_PATH);
   revalidatePath("/today");
-  redirectWithMessage("notice", "Habit deleted.");
+  redirectWithMessage(
+    "notice",
+    archived ? "Habit archived. History was preserved." : "Habit deleted."
+  );
 }

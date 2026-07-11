@@ -31,7 +31,21 @@ export async function getWeeklyBalance(inputWeekStartDate?: string) {
 
   const [habits, checkins, priorities, timeBlocks, goals] = await Promise.all([
     prisma.habit.findMany({
-      where: { isActive: true },
+      where: {
+        OR: [
+          { isActive: true },
+          {
+            logs: {
+              some: {
+                date: {
+                  gte: startDate,
+                  lt: endExclusiveDate,
+                },
+              },
+            },
+          },
+        ],
+      },
       orderBy: [{ weight: "desc" }, { category: "asc" }, { name: "asc" }],
       include: {
         logs: {
@@ -98,10 +112,16 @@ export async function getWeeklyBalance(inputWeekStartDate?: string) {
     const checkin = checkinsByDate.get(date) ?? null;
     const dayPriorities = prioritiesByDate.get(date) ?? [];
     const dayTimeBlocks = timeBlocksByDate.get(date) ?? [];
-    const dayHabits = habits.map(({ logs, ...habit }) => ({
-      ...habit,
-      log: logs.find((log) => dateToDateString(log.date) === date) ?? null,
-    }));
+    const dayHabits = habits
+      .map(({ logs, ...habit }) => ({
+        ...habit,
+        log: logs.find((log) => dateToDateString(log.date) === date) ?? null,
+      }))
+      .filter(
+        (habit) =>
+          dateToDateString(habit.createdAt) <= date &&
+          (habit.isActive || Boolean(habit.log))
+      );
     const hasHabitLog = dayHabits.some((habit) => habit.log);
     const dayType = (checkin?.dayType ?? "normal") as DayType;
     const score = calculateDailyBalance({
@@ -129,10 +149,10 @@ export async function getWeeklyBalance(inputWeekStartDate?: string) {
   const balance = calculateWeeklyBalance({
     weekStartDate,
     weekEndDate,
-    days,
-    goals,
-    expectedGoalProgressPercent: getElapsedWeekPercent(weekStartDate),
-  });
+      days,
+      goals,
+      expectedGoalProgressPercent: getElapsedWeekPercent(weekStartDate),
+    });
   const warnings = calculateWeeklyWarnings(balance);
 
   return {

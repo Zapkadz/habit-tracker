@@ -185,7 +185,7 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
               Daily score
             </CardDescription>
             <CardTitle className="text-2xl font-semibold">
-              {score.totalScore}
+              {score.dataStatus.isComplete ? score.totalScore : "--"}
             </CardTitle>
           </CardHeader>
           <CardContent>

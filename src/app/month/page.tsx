@@ -33,7 +33,7 @@ export default async function MonthPage({ searchParams }: MonthPageProps) {
       <MonthlySummaryCards review={review} />
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.85fr)]">
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <div className="grid gap-4 xl:grid-cols-2">
             <DailyProgressChart data={review.dailyProgress} />
             <WeeklyProgressChart data={review.weeklyProgress} />
@@ -45,7 +45,7 @@ export default async function MonthPage({ searchParams }: MonthPageProps) {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <RoutineRankCard motivation={motivation} />
           <SoftStreakCard motivation={motivation} />
           <MonthlyAnalysisPanel review={review} />

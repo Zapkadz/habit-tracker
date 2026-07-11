@@ -64,7 +64,21 @@ export async function getAnalyticsReview(input: AnalyticsRangeInput = {}) {
 
   const [habits, checkins, priorities, timeBlocks] = await Promise.all([
     prisma.habit.findMany({
-      where: { isActive: true },
+      where: {
+        OR: [
+          { isActive: true },
+          {
+            logs: {
+              some: {
+                date: {
+                  gte: startDate,
+                  lt: endExclusiveDate,
+                },
+              },
+            },
+          },
+        ],
+      },
       orderBy: [{ weight: "desc" }, { category: "asc" }, { name: "asc" }],
       include: {
         logs: {
@@ -155,10 +169,16 @@ export async function getAnalyticsReview(input: AnalyticsRangeInput = {}) {
     const checkin = checkinsByDate.get(date) ?? null;
     const dayPriorities = prioritiesByDate.get(date) ?? [];
     const dayTimeBlocks = timeBlocksByDate.get(date) ?? [];
-    const dayHabits = habits.map(({ logs, ...habit }) => ({
-      ...habit,
-      log: logs.find((log) => dateToDateString(log.date) === date) ?? null,
-    }));
+    const dayHabits = habits
+      .map(({ logs, ...habit }) => ({
+        ...habit,
+        log: logs.find((log) => dateToDateString(log.date) === date) ?? null,
+      }))
+      .filter(
+        (habit) =>
+          dateToDateString(habit.createdAt) <= date &&
+          (habit.isActive || Boolean(habit.log))
+      );
     const dayType = (checkin?.dayType ?? "normal") as DayType;
     const score = calculateDailyBalance({
       dayType,
