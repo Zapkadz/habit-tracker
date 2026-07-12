@@ -10,11 +10,12 @@ import {
   type TimeBlockStatus,
 } from "@/lib/constants/planner";
 import { dateStringToUtcDate, parseDateString } from "@/lib/dates/date-utils";
-import { minutesBetween, parseTimeString } from "@/lib/dates/time-utils";
+import { parseTimeString } from "@/lib/dates/time-utils";
 import {
   getTimeBlockQuickUpdate,
   type TimeBlockQuickAction,
 } from "@/lib/time-blocks/quick-actions";
+import { validateTimeBlockInput } from "@/lib/time-blocks/validation";
 
 function firstFormValue(value: FormDataEntryValue | null) {
   return typeof value === "string" ? value.trim() : "";
@@ -116,30 +117,23 @@ function parseTimeBlockForm(formData: FormData) {
     24 * 60
   );
 
-  if (title.length < 2) {
-    throw new Error("Time block title must be at least 2 characters.");
-  }
-
-  if (!plannedStartTime || !plannedEndTime) {
-    throw new Error("Planned start and end time are required.");
-  }
-
-  return {
+  const status = parseStatus(formData.get("status"));
+  const validated = validateTimeBlockInput({
     title,
-    category: parseCategory(formData.get("category")),
     plannedStartTime,
     plannedEndTime,
     actualStartTime,
     actualEndTime,
-    actualDurationMinutes:
-      explicitDuration ??
-      (actualStartTime && actualEndTime
-        ? minutesBetween(actualStartTime, actualEndTime)
-        : null),
+    actualDurationMinutes: explicitDuration,
+    status,
+    note: nullableText(formData.get("note")),
+  });
+
+  return {
+    ...validated,
+    category: parseCategory(formData.get("category")),
     priority: parseBoundedInteger(formData.get("priority"), 3, 1, 5),
     energyLevel: parseNullableBoundedInteger(formData.get("energyLevel"), 1, 10),
-    status: parseStatus(formData.get("status")),
-    note: nullableText(formData.get("note")),
   };
 }
 

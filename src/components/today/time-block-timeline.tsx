@@ -1,4 +1,5 @@
 import {
+  AlertTriangle,
   CheckCircle2,
   CircleSlash,
   Clock3,
@@ -37,6 +38,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { cn } from "@/lib/utils";
+import {
+  getOverlappingTimeBlockIds,
+  TIME_BLOCK_NOTE_MAX_LENGTH,
+  TIME_BLOCK_TITLE_MAX_LENGTH,
+} from "@/lib/time-blocks/validation";
 
 type TimeBlock = Awaited<ReturnType<typeof getTimeBlocks>>[number];
 
@@ -219,6 +225,7 @@ function TimeBlockForm({
             placeholder="N2 vocabulary"
             defaultValue={block?.title ?? ""}
             minLength={2}
+            maxLength={TIME_BLOCK_TITLE_MAX_LENGTH}
             required
           />
         </div>
@@ -331,6 +338,7 @@ function TimeBlockForm({
               id={`${idPrefix}-note`}
               name="note"
               rows={2}
+              maxLength={TIME_BLOCK_NOTE_MAX_LENGTH}
               defaultValue={block?.note ?? ""}
               className="min-h-16 w-full rounded-lg border border-input bg-white px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
             />
@@ -356,6 +364,7 @@ export function TimeBlockTimeline({
       sum + minutesBetween(block.plannedStartTime, block.plannedEndTime),
     0
   );
+  const overlappingIds = getOverlappingTimeBlockIds(timeBlocks);
 
   return (
     <Card className="min-w-0 rounded-lg border border-slate-200 bg-white shadow-sm ring-0">
@@ -414,6 +423,7 @@ export function TimeBlockTimeline({
               return (
                 <div
                   key={block.id}
+                  data-testid="time-block-item"
                   className="min-w-0 rounded-lg border border-slate-200 bg-white p-3"
                 >
                   <div className="grid gap-3 sm:grid-cols-[110px_minmax(0,1fr)] sm:items-start">
@@ -449,6 +459,18 @@ export function TimeBlockTimeline({
                             >
                               {TIME_BLOCK_STATUS_LABELS[block.status]}
                             </Badge>
+                            {overlappingIds.has(block.id) ? (
+                              <Badge
+                                variant="outline"
+                                className="rounded-lg border-amber-300 bg-amber-50 text-amber-900"
+                              >
+                                <AlertTriangle
+                                  className="size-3"
+                                  aria-hidden="true"
+                                />
+                                Overlap
+                              </Badge>
+                            ) : null}
                           </div>
                           <p className="mt-1 text-xs text-slate-500">
                             Planned {formatDuration(plannedDuration)} - Priority{" "}

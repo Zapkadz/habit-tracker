@@ -21,9 +21,11 @@ type AppInfoPanelProps = {
 
 function StatRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="flex items-center justify-between gap-3 text-sm">
+    <div className="flex flex-wrap items-start justify-between gap-x-3 gap-y-1 text-sm">
       <span className="text-slate-600">{label}</span>
-      <span className="font-medium text-slate-950">{value}</span>
+      <span className="min-w-0 break-all text-right font-medium text-slate-950">
+        {value}
+      </span>
     </div>
   );
 }
@@ -50,7 +52,7 @@ export function AppInfoPanel({ databaseUrl }: AppInfoPanelProps) {
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="grid gap-4 xl:grid-cols-3">
+      <CardContent className="grid min-w-0 gap-4">
         <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-3">
           <p className="flex items-center gap-2 text-sm font-semibold text-slate-950">
             <ShieldCheck className="size-4" aria-hidden="true" />

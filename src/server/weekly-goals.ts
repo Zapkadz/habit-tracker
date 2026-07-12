@@ -11,6 +11,7 @@ import {
 import { dateStringToUtcDate } from "@/lib/dates/date-utils";
 import { getWeekStartDateString } from "@/lib/dates/week-utils";
 import { prisma } from "@/lib/prisma";
+import { validateRequiredText } from "@/lib/validation/text";
 
 function firstFormValue(value: FormDataEntryValue | null) {
   return typeof value === "string" ? value.trim() : "";
@@ -52,11 +53,7 @@ function parseGoalValue(
 }
 
 function validateTitle(title: string) {
-  if (title.length < 2) {
-    throw new Error("Weekly goal title must be at least 2 characters.");
-  }
-
-  return title;
+  return validateRequiredText(title, "Weekly goal title");
 }
 
 function weekRedirect(

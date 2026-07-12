@@ -9,6 +9,10 @@ import {
   type DailyPriorityStatus,
 } from "@/lib/constants/planner";
 import { dateStringToUtcDate, parseDateString } from "@/lib/dates/date-utils";
+import {
+  validateOptionalText,
+  validateRequiredText,
+} from "@/lib/validation/text";
 
 function firstFormValue(value: FormDataEntryValue | null) {
   return typeof value === "string" ? value.trim() : "";
@@ -41,11 +45,7 @@ function todayRedirect(date: string, type: "notice" | "error", message: string):
 }
 
 function validateTitle(title: string) {
-  if (title.length < 2) {
-    throw new Error("Priority title must be at least 2 characters.");
-  }
-
-  return title;
+  return validateRequiredText(title, "Priority title");
 }
 
 async function getNextPriorityOrder(date: Date) {
@@ -92,7 +92,10 @@ export async function createDailyPriority(formData: FormData) {
         title: validateTitle(firstFormValue(formData.get("title"))),
         priorityOrder,
         status: "planned",
-        note: nullableText(formData.get("note")),
+        note: validateOptionalText(
+          nullableText(formData.get("note")),
+          "Priority note"
+        ),
       },
     });
   } catch (error) {
@@ -121,7 +124,10 @@ export async function updateDailyPriority(formData: FormData) {
       data: {
         title: validateTitle(firstFormValue(formData.get("title"))),
         status: parsePriorityStatus(formData.get("status")),
-        note: nullableText(formData.get("note")),
+        note: validateOptionalText(
+          nullableText(formData.get("note")),
+          "Priority note"
+        ),
       },
     });
   } catch (error) {

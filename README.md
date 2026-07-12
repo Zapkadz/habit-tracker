@@ -4,7 +4,7 @@ Local-first web app for planning daily routines, tracking habits, balancing work
 
 ## Current Phase
 
-Phase 11: Daily use UX and input flow polish.
+Phase 12: Release readiness and data safety.
 
 The foundation includes:
 
@@ -36,6 +36,10 @@ The foundation includes:
 - Today completion guide for missing score signals
 - Time block quick actions for marking done, partial, skipped, or copying planned time to actual time
 - Faster priority and check-in status updates with pending/confirmation states
+- Versioned Full JSON backups with validated, transactional restore
+- Shared input limits and stronger Time Block consistency rules
+- Time Block overlap warnings without blocking flexible planning
+- Playwright end-to-end coverage using an isolated SQLite test database
 
 No authentication, deployment, AI, or full feature logic is included in the MVP foundation.
 
@@ -113,6 +117,21 @@ Run tests:
 npm run test
 ```
 
+Run end-to-end tests with an isolated SQLite database and dev server:
+
+```bash
+npm run test:e2e
+```
+
+Run the complete release check:
+
+```bash
+npm run verify
+```
+
+The release check uses isolated `.next-e2e` and `.next-verify` build folders,
+so it can run while the normal development server is open.
+
 Run production build:
 
 ```bash
@@ -149,6 +168,11 @@ Open `Settings` to download:
 - Habit logs CSV
 - Time blocks CSV
 - Check-ins CSV
+
+The Full JSON export includes a schema version and can be restored from
+`Settings`. Restore validates the complete file before replacing data and runs
+inside one database transaction. Download a current Full JSON backup before
+confirming a restore.
 
 For a database backup, stop the dev server first, then copy `dev.db` or the file pointed to by `DATABASE_URL`.
 
@@ -246,6 +270,24 @@ For a database backup, stop the dev server first, then copy `dev.db` or the file
 - Move time block actual, energy, priority, status, and note fields into an advanced section.
 - Add pending states and delete confirmations to more daily input forms.
 - Explain skipped habit status as neutral while missed remains zero.
+
+## Phase 12 Features
+
+- Add bounded text validation across habits, priorities, check-ins, weekly goals,
+  and time blocks.
+- Reject inconsistent actual time/status combinations while preserving overnight
+  time blocks.
+- Detect overlapping planned time blocks and show a non-blocking warning.
+- Add schema-versioned Full JSON exports with legacy version compatibility.
+- Validate backup structure, enum values, dates, unique keys, and habit-log
+  relationships before restore.
+- Preview backup record counts and require explicit confirmation before restore.
+- Replace local data inside a single Prisma transaction so failed restores roll
+  back completely.
+- Add Playwright end-to-end tests for export/restore round trips, daily input,
+  empty databases, and mobile overflow.
+- Add `npm run verify` as the release gate for lint, unit tests, E2E tests, and
+  production build.
 
 ## Navigation
 

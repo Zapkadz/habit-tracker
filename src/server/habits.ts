@@ -14,6 +14,10 @@ import {
   MIN_TARGET_PER_WEEK,
   type HabitCategory,
 } from "@/lib/constants/habits";
+import {
+  ICON_KEY_MAX_LENGTH,
+  validateRequiredText,
+} from "@/lib/validation/text";
 
 const HABITS_PATH = "/habits";
 
@@ -51,12 +55,15 @@ function redirectWithMessage(type: "notice" | "error", message: string): never {
 }
 
 function parseHabitForm(formData: FormData) {
-  const name = firstFormValue(formData.get("name"));
-  const icon = firstFormValue(formData.get("icon")) || "circle-check";
-
-  if (name.length < 2) {
-    throw new Error("Habit name must be at least 2 characters.");
-  }
+  const name = validateRequiredText(
+    firstFormValue(formData.get("name")),
+    "Habit name"
+  );
+  const icon = validateRequiredText(
+    firstFormValue(formData.get("icon")) || "circle-check",
+    "Icon key",
+    { min: 1, max: ICON_KEY_MAX_LENGTH }
+  );
 
   return {
     name,

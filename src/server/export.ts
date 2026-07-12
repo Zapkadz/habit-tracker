@@ -2,6 +2,10 @@
 
 import { prisma } from "@/lib/prisma";
 import { rowsToCsv } from "@/lib/export/csv-export";
+import {
+  BACKUP_APP_NAME,
+  BACKUP_SCHEMA_VERSION,
+} from "@/lib/backup/backup-schema";
 
 export async function getExportSnapshot() {
   const [
@@ -14,10 +18,7 @@ export async function getExportSnapshot() {
     weeklyGoals,
   ] = await Promise.all([
     prisma.habit.findMany({ orderBy: [{ category: "asc" }, { name: "asc" }] }),
-    prisma.habitLog.findMany({
-      orderBy: [{ date: "asc" }],
-      include: { habit: { select: { name: true } } },
-    }),
+    prisma.habitLog.findMany({ orderBy: [{ date: "asc" }] }),
     prisma.timeBlock.findMany({
       orderBy: [{ date: "asc" }, { plannedStartTime: "asc" }],
     }),
@@ -31,8 +32,8 @@ export async function getExportSnapshot() {
 
   return {
     exportedAt: new Date().toISOString(),
-    app: "Habit Tracker - Routine Balance Dashboard",
-    version: 1,
+    app: BACKUP_APP_NAME,
+    schemaVersion: BACKUP_SCHEMA_VERSION,
     data: {
       habits,
       habitLogs,

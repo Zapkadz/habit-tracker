@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { DAY_TYPES, type DayType } from "@/lib/constants/day-types";
 import { dateStringToUtcDate, parseDateString } from "@/lib/dates/date-utils";
 import { parseTimeString } from "@/lib/dates/time-utils";
+import { validateOptionalText } from "@/lib/validation/text";
 
 function firstFormValue(value: FormDataEntryValue | null) {
   return typeof value === "string" ? value.trim() : "";
@@ -58,6 +59,20 @@ export async function upsertDailyCheckin(formData: FormData) {
   const sleepStart = parseTimeString(formData.get("sleepStart")) || null;
   const wakeTime = parseTimeString(formData.get("wakeTime")) || null;
   const date = dateStringToUtcDate(dateString);
+  let note: string | null = null;
+
+  try {
+    note = validateOptionalText(
+      nullableText(formData.get("note")),
+      "Check-in note"
+    );
+  } catch (error) {
+    todayRedirect(
+      dateString,
+      "error",
+      error instanceof Error ? error.message : "Check-in note is invalid."
+    );
+  }
 
   try {
     await prisma.dailyCheckin.upsert({
@@ -69,7 +84,7 @@ export async function upsertDailyCheckin(formData: FormData) {
         mood: parseRating(formData.get("mood")),
         motivation: parseRating(formData.get("motivation")),
         stress: parseRating(formData.get("stress")),
-        note: nullableText(formData.get("note")),
+        note,
       },
       create: {
         date,
@@ -79,7 +94,7 @@ export async function upsertDailyCheckin(formData: FormData) {
         mood: parseRating(formData.get("mood")),
         motivation: parseRating(formData.get("motivation")),
         stress: parseRating(formData.get("stress")),
-        note: nullableText(formData.get("note")),
+        note,
       },
     });
   } catch {

@@ -12,6 +12,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
+import { NOTE_MAX_LENGTH } from "@/lib/validation/text";
 
 type DailyCheckin = Awaited<ReturnType<typeof getDailyCheckin>>;
 
@@ -112,6 +113,7 @@ export function DailyCheckinForm({ date, checkin }: DailyCheckinFormProps) {
               id="checkin-note"
               name="note"
               rows={4}
+              maxLength={NOTE_MAX_LENGTH}
               defaultValue={checkin?.note ?? ""}
               placeholder="Short context for today..."
               className="min-h-24 w-full rounded-lg border border-input bg-white px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
