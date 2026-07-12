@@ -13,6 +13,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
+import {
+  ICON_KEY_MAX_LENGTH,
+  TITLE_MAX_LENGTH,
+} from "@/lib/validation/text";
 
 type Habit = Awaited<ReturnType<typeof getHabits>>[number];
 
@@ -41,6 +45,7 @@ export function HabitForm({ habit, mode = "create" }: HabitFormProps) {
             defaultValue={habit?.name}
             required
             minLength={2}
+            maxLength={TITLE_MAX_LENGTH}
           />
         </div>
 
@@ -53,6 +58,7 @@ export function HabitForm({ habit, mode = "create" }: HabitFormProps) {
             name="icon"
             placeholder="book-open"
             defaultValue={habit?.icon ?? "circle-check"}
+            maxLength={ICON_KEY_MAX_LENGTH}
           />
         </div>
 

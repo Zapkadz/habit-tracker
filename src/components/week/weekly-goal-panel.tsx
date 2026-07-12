@@ -22,6 +22,7 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { TITLE_MAX_LENGTH } from "@/lib/validation/text";
 import {
   Table,
   TableBody,
@@ -67,6 +68,7 @@ function GoalFields({
           defaultValue={goal?.title}
           required
           minLength={2}
+          maxLength={TITLE_MAX_LENGTH}
         />
       </div>
 

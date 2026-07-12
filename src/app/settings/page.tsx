@@ -2,6 +2,7 @@ import { Database, Download, Gauge, Settings } from "lucide-react";
 import { AppInfoPanel } from "@/components/settings/app-info-panel";
 import { BackupPanel } from "@/components/settings/backup-panel";
 import { ExportPanel } from "@/components/settings/export-panel";
+import { RestorePanel } from "@/components/settings/restore-panel";
 import {
   Card,
   CardContent,
@@ -13,7 +14,15 @@ import { getSettingsOverview } from "@/server/export";
 
 export const dynamic = "force-dynamic";
 
-export default async function SettingsPage() {
+type SettingsPageProps = {
+  searchParams?: Promise<{
+    notice?: string;
+    error?: string;
+  }>;
+};
+
+export default async function SettingsPage({ searchParams }: SettingsPageProps) {
+  const params = searchParams ? await searchParams : {};
   const overview = await getSettingsOverview();
 
   return (
@@ -35,6 +44,17 @@ export default async function SettingsPage() {
           </div>
         </div>
       </section>
+
+      {params.notice ? (
+        <div className="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">
+          {params.notice}
+        </div>
+      ) : null}
+      {params.error ? (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-900">
+          {params.error}
+        </div>
+      ) : null}
 
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <Card
@@ -115,6 +135,7 @@ export default async function SettingsPage() {
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
         <div className="space-y-4">
           <ExportPanel counts={overview.counts} />
+          <RestorePanel />
           <BackupPanel databaseUrl={overview.databaseUrl} />
         </div>
         <AppInfoPanel databaseUrl={overview.databaseUrl} />

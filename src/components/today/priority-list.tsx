@@ -25,6 +25,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PendingSubmitButton } from "@/components/ui/pending-submit-button";
 import { cn } from "@/lib/utils";
+import { NOTE_MAX_LENGTH, TITLE_MAX_LENGTH } from "@/lib/validation/text";
 
 type DailyPriority = Awaited<ReturnType<typeof getDailyPriorities>>[number];
 
@@ -103,6 +104,7 @@ export function PriorityList({ date, priorities }: PriorityListProps) {
                 name="title"
                 placeholder="Finish Java Spring lesson"
                 minLength={2}
+                maxLength={TITLE_MAX_LENGTH}
                 required
               />
             </div>
@@ -220,6 +222,7 @@ export function PriorityList({ date, priorities }: PriorityListProps) {
                           name="title"
                           defaultValue={priority.title}
                           minLength={2}
+                          maxLength={TITLE_MAX_LENGTH}
                           required
                         />
                       </div>
@@ -241,6 +244,7 @@ export function PriorityList({ date, priorities }: PriorityListProps) {
                         id={`priority-note-${priority.id}`}
                         name="note"
                         rows={2}
+                        maxLength={NOTE_MAX_LENGTH}
                         defaultValue={priority.note ?? ""}
                         className="min-h-16 w-full rounded-lg border border-input bg-white px-2.5 py-2 text-sm outline-none transition-colors placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
                       />
