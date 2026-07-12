@@ -204,14 +204,14 @@ function TimeBlockForm({
   const idPrefix = editingBlock?.id ?? "new-time-block";
 
   return (
-    <form action={action} className="grid gap-3">
+    <form action={action} className="grid min-w-0 gap-3">
       <input name="date" type="hidden" value={date} />
       {editingBlock ? (
         <input name="id" type="hidden" value={editingBlock.id} />
       ) : null}
 
-      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_180px_110px_110px]">
-        <div className="space-y-2">
+      <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+        <div className="min-w-0 space-y-2 sm:col-span-2">
           <Label htmlFor={`${idPrefix}-title`}>Title</Label>
           <Input
             id={`${idPrefix}-title`}
@@ -222,14 +222,14 @@ function TimeBlockForm({
             required
           />
         </div>
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2 sm:col-span-2">
           <Label htmlFor={`${idPrefix}-category`}>Category</Label>
           <CategorySelect
             id={`${idPrefix}-category`}
             defaultValue={block?.category ?? "study"}
           />
         </div>
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           <Label htmlFor={`${idPrefix}-planned-start`}>Start</Label>
           <Input
             id={`${idPrefix}-planned-start`}
@@ -239,7 +239,7 @@ function TimeBlockForm({
             required
           />
         </div>
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           <Label htmlFor={`${idPrefix}-planned-end`}>End</Label>
           <Input
             id={`${idPrefix}-planned-end`}
@@ -260,8 +260,8 @@ function TimeBlockForm({
           Actual & advanced
         </summary>
         <div className="mt-3 grid gap-3 border-t border-slate-200 pt-3">
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[110px_110px_120px_110px_110px_minmax(120px,1fr)]">
-            <div className="space-y-2">
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+            <div className="min-w-0 space-y-2">
               <Label htmlFor={`${idPrefix}-actual-start`}>Actual start</Label>
               <Input
                 id={`${idPrefix}-actual-start`}
@@ -270,7 +270,7 @@ function TimeBlockForm({
                 defaultValue={block?.actualStartTime ?? ""}
               />
             </div>
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
               <Label htmlFor={`${idPrefix}-actual-end`}>Actual end</Label>
               <Input
                 id={`${idPrefix}-actual-end`}
@@ -279,7 +279,7 @@ function TimeBlockForm({
                 defaultValue={block?.actualEndTime ?? ""}
               />
             </div>
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
               <Label htmlFor={`${idPrefix}-actual-duration`}>Actual min</Label>
               <Input
                 id={`${idPrefix}-actual-duration`}
@@ -290,7 +290,7 @@ function TimeBlockForm({
                 defaultValue={block?.actualDurationMinutes ?? ""}
               />
             </div>
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
               <Label htmlFor={`${idPrefix}-priority`}>Priority</Label>
               <Input
                 id={`${idPrefix}-priority`}
@@ -302,7 +302,7 @@ function TimeBlockForm({
                 required
               />
             </div>
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
               <Label htmlFor={`${idPrefix}-energy`}>Energy</Label>
               <Input
                 id={`${idPrefix}-energy`}
@@ -316,7 +316,7 @@ function TimeBlockForm({
                 1 = drained, 10 = high focus.
               </p>
             </div>
-            <div className="space-y-2">
+            <div className="min-w-0 space-y-2">
               <Label htmlFor={`${idPrefix}-status`}>Status</Label>
               <StatusSelect
                 id={`${idPrefix}-status`}
@@ -358,7 +358,7 @@ export function TimeBlockTimeline({
   );
 
   return (
-    <Card className="rounded-lg border border-slate-200 bg-white shadow-sm ring-0">
+    <Card className="min-w-0 rounded-lg border border-slate-200 bg-white shadow-sm ring-0">
       <CardHeader className="border-b border-slate-100">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -378,7 +378,7 @@ export function TimeBlockTimeline({
           </Badge>
         </div>
       </CardHeader>
-      <CardContent className="space-y-4 pt-4">
+      <CardContent className="min-w-0 space-y-4 pt-4">
         <details
           className="rounded-lg border border-slate-200 bg-slate-50 p-3"
           open={timeBlocks.length === 0}
@@ -414,7 +414,7 @@ export function TimeBlockTimeline({
               return (
                 <div
                   key={block.id}
-                  className="rounded-lg border border-slate-200 bg-white p-3"
+                  className="min-w-0 rounded-lg border border-slate-200 bg-white p-3"
                 >
                   <div className="grid gap-3 sm:grid-cols-[110px_minmax(0,1fr)] sm:items-start">
                     <div className="rounded-lg bg-slate-950 px-3 py-2 text-center text-sm font-semibold text-white">
@@ -425,10 +425,10 @@ export function TimeBlockTimeline({
                     </div>
 
                     <div className="min-w-0 space-y-3">
-                      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                      <div className="flex flex-col gap-3">
                         <div className="min-w-0">
                           <div className="flex flex-wrap items-center gap-2">
-                            <p className="max-w-full break-words font-medium leading-6 text-slate-950">
+                            <p className="w-full min-w-0 break-words font-medium leading-6 text-slate-950">
                               {block.title}
                             </p>
                             <Badge
@@ -470,7 +470,7 @@ export function TimeBlockTimeline({
                           ) : null}
                         </div>
 
-                        <div className="flex shrink-0 flex-wrap items-center gap-2 md:justify-end">
+                        <div className="flex min-w-0 flex-wrap items-center gap-2">
                           <TimeBlockQuickActions date={date} block={block} />
                           <form action={deleteTimeBlock}>
                             <input name="id" type="hidden" value={block.id} />
@@ -495,7 +495,7 @@ export function TimeBlockTimeline({
                     </div>
                   </div>
 
-                  <details className="mt-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
+                  <details className="mt-3 min-w-0 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2">
                     <summary className="flex cursor-pointer list-none items-center gap-2 text-xs font-medium text-slate-600 marker:hidden">
                       <Edit3 className="size-3.5" aria-hidden="true" />
                       Edit time block

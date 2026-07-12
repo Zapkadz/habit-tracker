@@ -198,7 +198,7 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
       </section>
 
       <section className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(360px,0.85fr)]">
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <section id="priorities" className="scroll-mt-20">
             <PriorityList date={selectedDate} priorities={priorities} />
           </section>
@@ -210,7 +210,7 @@ export default async function TodayPage({ searchParams }: TodayPageProps) {
           </section>
         </div>
 
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <DayCompletionPanel score={score} />
           <IdentityReminderCard motivation={motivation} />
           <RecoveryMessageCard motivation={motivation} />
