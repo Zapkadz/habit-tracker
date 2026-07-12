@@ -210,7 +210,7 @@ function TimeBlockForm({
         <input name="id" type="hidden" value={editingBlock.id} />
       ) : null}
 
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_180px_110px_110px]">
+      <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_180px_110px_110px]">
         <div className="space-y-2">
           <Label htmlFor={`${idPrefix}-title`}>Title</Label>
           <Input
@@ -260,7 +260,7 @@ function TimeBlockForm({
           Actual & advanced
         </summary>
         <div className="mt-3 grid gap-3 border-t border-slate-200 pt-3">
-          <div className="grid gap-3 lg:grid-cols-[110px_110px_120px_110px_110px_140px]">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-[110px_110px_120px_110px_110px_minmax(120px,1fr)]">
             <div className="space-y-2">
               <Label htmlFor={`${idPrefix}-actual-start`}>Actual start</Label>
               <Input
@@ -416,7 +416,7 @@ export function TimeBlockTimeline({
                   key={block.id}
                   className="rounded-lg border border-slate-200 bg-white p-3"
                 >
-                  <div className="grid gap-3 lg:grid-cols-[110px_minmax(0,1fr)_auto] lg:items-start">
+                  <div className="grid gap-3 sm:grid-cols-[110px_minmax(0,1fr)] sm:items-start">
                     <div className="rounded-lg bg-slate-950 px-3 py-2 text-center text-sm font-semibold text-white">
                       {block.plannedStartTime}
                       <span className="block text-xs font-normal text-slate-300">
@@ -424,67 +424,74 @@ export function TimeBlockTimeline({
                       </span>
                     </div>
 
-                    <div className="min-w-0">
-                      <div className="flex flex-wrap items-center gap-2">
-                        <p className="font-medium text-slate-950">
-                          {block.title}
-                        </p>
-                        <Badge
-                          variant="outline"
-                          className={cn(
-                            "rounded-lg",
-                            categoryTone[block.category]
-                          )}
-                        >
-                          {TIME_BLOCK_CATEGORY_LABELS[block.category]}
-                        </Badge>
-                        <Badge
-                          variant="outline"
-                          className={cn("rounded-lg", statusTone[block.status])}
-                        >
-                          {TIME_BLOCK_STATUS_LABELS[block.status]}
-                        </Badge>
+                    <div className="min-w-0 space-y-3">
+                      <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
+                        <div className="min-w-0">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <p className="max-w-full break-words font-medium leading-6 text-slate-950">
+                              {block.title}
+                            </p>
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "rounded-lg",
+                                categoryTone[block.category]
+                              )}
+                            >
+                              {TIME_BLOCK_CATEGORY_LABELS[block.category]}
+                            </Badge>
+                            <Badge
+                              variant="outline"
+                              className={cn(
+                                "rounded-lg",
+                                statusTone[block.status]
+                              )}
+                            >
+                              {TIME_BLOCK_STATUS_LABELS[block.status]}
+                            </Badge>
+                          </div>
+                          <p className="mt-1 text-xs text-slate-500">
+                            Planned {formatDuration(plannedDuration)} - Priority{" "}
+                            {block.priority}
+                            {block.energyLevel
+                              ? ` - Energy ${block.energyLevel}/10`
+                              : ""}
+                          </p>
+                          {actualDuration !== null ||
+                          block.actualStartTime ||
+                          block.actualEndTime ? (
+                            <p className="mt-1 text-xs text-slate-500">
+                              Actual: {block.actualStartTime ?? "--"} to{" "}
+                              {block.actualEndTime ?? "--"}
+                              {actualDuration !== null
+                                ? ` - ${formatDuration(actualDuration)}`
+                                : ""}
+                            </p>
+                          ) : null}
+                        </div>
+
+                        <div className="flex shrink-0 flex-wrap items-center gap-2 md:justify-end">
+                          <TimeBlockQuickActions date={date} block={block} />
+                          <form action={deleteTimeBlock}>
+                            <input name="id" type="hidden" value={block.id} />
+                            <input name="date" type="hidden" value={date} />
+                            <ConfirmSubmitButton
+                              confirmMessage="Delete this time block?"
+                              variant="destructive"
+                              size="icon-sm"
+                              title="Delete time block"
+                              pendingLabel="..."
+                            >
+                              <Trash2 className="size-4" aria-hidden="true" />
+                            </ConfirmSubmitButton>
+                          </form>
+                        </div>
                       </div>
-                      <p className="mt-1 text-xs text-slate-500">
-                        Planned {formatDuration(plannedDuration)} - Priority{" "}
-                        {block.priority}
-                        {block.energyLevel
-                          ? ` - Energy ${block.energyLevel}/10`
-                          : ""}
-                      </p>
-                      {actualDuration !== null ||
-                      block.actualStartTime ||
-                      block.actualEndTime ? (
-                        <p className="mt-1 text-xs text-slate-500">
-                          Actual: {block.actualStartTime ?? "--"} to{" "}
-                          {block.actualEndTime ?? "--"}
-                          {actualDuration !== null
-                            ? ` - ${formatDuration(actualDuration)}`
-                            : ""}
-                        </p>
-                      ) : null}
                       {block.note ? (
                         <p className="mt-2 text-sm leading-6 text-slate-600">
                           {block.note}
                         </p>
                       ) : null}
-                    </div>
-
-                    <div className="flex flex-col items-start gap-2 lg:items-end">
-                      <TimeBlockQuickActions date={date} block={block} />
-                      <form action={deleteTimeBlock}>
-                        <input name="id" type="hidden" value={block.id} />
-                        <input name="date" type="hidden" value={date} />
-                        <ConfirmSubmitButton
-                          confirmMessage="Delete this time block?"
-                          variant="destructive"
-                          size="icon-sm"
-                          title="Delete time block"
-                          pendingLabel="..."
-                        >
-                          <Trash2 className="size-4" aria-hidden="true" />
-                        </ConfirmSubmitButton>
-                      </form>
                     </div>
                   </div>
 
